@@ -124,44 +124,91 @@ class PrepaidCardService
             $refundAmount = $contract->getCostAmount();
         }
 
-        $realBack = 0;
+        $totalRefundable = 0;
+        $consumptions = [];
+        
+        // 首先计算总的可退款金额
         foreach ($contract->getConsumptions() as $consumption) {
-            if (!$refundAmount) {
-                continue;
-            }
             if ($consumption->getRefundableAmount() <= 0) {
                 continue;
             }
-
-            // 计算退款金额
-            $v = min($consumption->getRefundableAmount(), $refundAmount);
+            $totalRefundable += $consumption->getRefundableAmount();
+            $consumptions[] = $consumption;
+        }
+        
+        // 计算实际可退款金额（不能超过总可退款金额）
+        $actualRefundAmount = min($refundAmount, $totalRefundable);
+        
+        $realBack = 0;
+        // 如果没有可退款的消费记录，直接退出
+        if (empty($consumptions) || $actualRefundAmount <= 0) {
+            // 记录退款时间
+            $contract->setRefundTime(Carbon::now());
+            $this->entityManager->persist($contract);
+            $this->entityManager->flush();
+            return $realBack;
+        }
+        
+        // 如果只有一个消费记录，直接退款
+        if (count($consumptions) === 1) {
+            $consumption = $consumptions[0];
+            $v = min($consumption->getRefundableAmount(), $actualRefundAmount);
             $realBack += $v;
-            $refundAmount = $refundAmount - $v;
             $consumption->setRefundableAmount($consumption->getRefundableAmount() - $v);
             $this->entityManager->persist($consumption);
-
+            
             // 卡上的余额要变化
             $card = $consumption->getCard();
-            $card->setBalance($card->getBalance() + $v);
+            // 确保余额保持两位小数格式
+            $card->setBalance(number_format($card->getBalance() + $v, 2, '.', ''));
             $card->checkStatus();
             $this->entityManager->persist($card);
-
+            
             // 退换需要额外增加一条记录
             $backLog = new Consumption();
             $backLog->setCard($card);
             $backLog->setTitle("{$consumption->getTitle()} - 退还");
             $backLog->setOrderId($consumption->getOrderId());
             $backLog->setAmount($v);
-            $backLog->setRefundableAmount(0); // 这种退换的，没得继续退的喔
+            $backLog->setRefundableAmount(0);
             $backLog->setContract($contract);
             $this->entityManager->persist($backLog);
+        } else {
+            // 如果有多个消费记录，按比例退款
+            foreach ($consumptions as $consumption) {
+                // 按比例计算每个消费记录应该退的金额
+                $ratio = $consumption->getRefundableAmount() / $totalRefundable;
+                $v = min($consumption->getRefundableAmount(), round($actualRefundAmount * $ratio, 2));
+                
+                $realBack += $v;
+                $consumption->setRefundableAmount($consumption->getRefundableAmount() - $v);
+                $this->entityManager->persist($consumption);
+                
+                // 卡上的余额要变化
+                $card = $consumption->getCard();
+                // 确保余额保持两位小数格式
+                $card->setBalance(number_format($card->getBalance() + $v, 2, '.', ''));
+                $card->checkStatus();
+                $this->entityManager->persist($card);
+                
+                // 退换需要额外增加一条记录
+                $backLog = new Consumption();
+                $backLog->setCard($card);
+                $backLog->setTitle("{$consumption->getTitle()} - 退还");
+                $backLog->setOrderId($consumption->getOrderId());
+                $backLog->setAmount($v);
+                $backLog->setRefundableAmount(0);
+                $backLog->setContract($contract);
+                $this->entityManager->persist($backLog);
+            }
         }
-
+        
         // 记录退款时间
         $contract->setRefundTime(Carbon::now());
-
+        $this->entityManager->persist($contract);
+        
         $this->entityManager->flush();
-
+        
         return $realBack;
     }
 
