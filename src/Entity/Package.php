@@ -1,0 +1,421 @@
+<?php
+
+namespace PrepaidCardBundle\Entity;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use PrepaidCardBundle\Enum\PrepaidCardExpireType;
+use PrepaidCardBundle\Enum\PrepaidCardType;
+use PrepaidCardBundle\Repository\PackageRepository;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Tourze\Arrayable\AdminArrayInterface;
+use Tourze\Arrayable\ApiArrayInterface;
+use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
+use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
+use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
+use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
+use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
+use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\EasyAdmin\Attribute\Action\Creatable;
+use Tourze\EasyAdmin\Attribute\Action\Deletable;
+use Tourze\EasyAdmin\Attribute\Action\Editable;
+use Tourze\EasyAdmin\Attribute\Action\Listable;
+use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
+use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
+use Tourze\EasyAdmin\Attribute\Column\ListColumn;
+use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
+use Tourze\EasyAdmin\Attribute\Field\FormField;
+use Tourze\EasyAdmin\Attribute\Field\ImagePickerField;
+use Tourze\EasyAdmin\Attribute\Filter\Filterable;
+use Tourze\EasyAdmin\Attribute\Filter\Keyword;
+use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
+
+#[AsPermission(title: '礼品卡码包')]
+#[Listable]
+#[Creatable]
+#[Editable]
+#[Deletable]
+#[ORM\Table(name: 'ims_prepaid_package', options: ['comment' => '礼品卡码包'])]
+#[ORM\Entity(repositoryClass: PackageRepository::class)]
+class Package implements ApiArrayInterface, AdminArrayInterface
+{
+    #[ExportColumn]
+    #[ListColumn(order: -1, sorter: true)]
+    #[Groups(['restful_read', 'admin_curd', 'recursive_view', 'api_tree'])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
+    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
+    private ?string $id = null;
+
+    #[Ignore]
+    #[ORM\ManyToOne(inversedBy: 'packages')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Campaign $campaign = null;
+
+    #[IndexColumn]
+    #[Keyword]
+    #[ListColumn]
+    #[FormField(span: 10)]
+    #[ORM\Column(length: 40, unique: true, options: ['comment' => '码包ID'])]
+    private string $packageId;
+
+    #[IndexColumn]
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 7)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '面值'])]
+    private ?string $parValue = null;
+
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 7)]
+    #[ORM\Column(options: ['comment' => '数量'])]
+    private int $quantity;
+
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 9)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '卡有效起始时间'])]
+    private ?\DateTimeInterface $startTime = null;
+
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 15)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '卡有效截止时间'])]
+    private ?\DateTimeInterface $expireTime = null;
+
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 6)]
+    #[ORM\Column(nullable: true, options: ['comment' => '余额有效期（天）'])]
+    private ?int $expireDays = null;
+
+    #[ListColumn(sorter: true)]
+    #[FormField(span: 8)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '最大有效时间'])]
+    private ?\DateTimeInterface $maxValidTime = null;
+
+    #[ListColumn]
+    #[FormField(span: 10)]
+    #[ORM\Column(length: 20, enumType: PrepaidCardType::class, options: ['comment' => '类型'])]
+    private PrepaidCardType $type;
+
+    #[ORM\Column(type: Types::SMALLINT, enumType: PrepaidCardExpireType::class, options: ['comment' => '类型'])]
+    private PrepaidCardExpireType $expireType;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 0, 'comment' => '天数'])]
+    private int $expireNum;
+
+    #[ImagePickerField]
+    #[PictureColumn]
+    #[ListColumn]
+    #[FormField]
+    #[ORM\Column(length: 500, nullable: true, options: ['comment' => '缩略图'])]
+    private ?string $thumbUrl = null;
+
+    /**
+     * @var Collection<int, Card>
+     */
+    #[ORM\OneToMany(mappedBy: 'package', targetEntity: Card::class)]
+    private Collection $cards;
+
+    #[BoolColumn]
+    #[IndexColumn]
+    #[TrackColumn]
+    #[Groups(['admin_curd', 'restful_read', 'restful_read', 'restful_write'])]
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
+    #[ListColumn(order: 97)]
+    #[FormField(order: 97)]
+    private ?bool $valid = false;
+
+    #[CreatedByColumn]
+    #[Groups(['restful_read'])]
+    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
+    private ?string $createdBy = null;
+
+    #[UpdatedByColumn]
+    #[Groups(['restful_read'])]
+    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
+    private ?string $updatedBy = null;
+
+    #[Filterable]
+    #[IndexColumn]
+    #[ListColumn(order: 98, sorter: true)]
+    #[ExportColumn]
+    #[CreateTimeColumn]
+    #[Groups(['restful_read', 'admin_curd', 'restful_read'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
+    private ?\DateTimeInterface $createTime = null;
+
+    #[UpdateTimeColumn]
+    #[ListColumn(order: 99, sorter: true)]
+    #[Groups(['restful_read', 'admin_curd', 'restful_read'])]
+    #[Filterable]
+    #[ExportColumn]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]
+    private ?\DateTimeInterface $updateTime = null;
+
+    public function __construct()
+    {
+        $this->cards = new ArrayCollection();
+    }
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function setCreatedBy(?string $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?string
+    {
+        return $this->createdBy;
+    }
+
+    public function setUpdatedBy(?string $updatedBy): self
+    {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?string
+    {
+        return $this->updatedBy;
+    }
+
+    public function isValid(): ?bool
+    {
+        return $this->valid;
+    }
+
+    public function setValid(?bool $valid): self
+    {
+        $this->valid = $valid;
+
+        return $this;
+    }
+
+    public function getCampaign(): ?Campaign
+    {
+        return $this->campaign;
+    }
+
+    public function setCampaign(?Campaign $campaign): static
+    {
+        $this->campaign = $campaign;
+
+        return $this;
+    }
+
+    public function getPackageId(): string
+    {
+        return $this->packageId;
+    }
+
+    public function setPackageId(string $packageId): static
+    {
+        $this->packageId = $packageId;
+
+        return $this;
+    }
+
+    public function getParValue(): ?string
+    {
+        return $this->parValue;
+    }
+
+    public function setParValue(?string $parValue): static
+    {
+        $this->parValue = $parValue;
+
+        return $this;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): static
+    {
+        $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getType(): PrepaidCardType
+    {
+        return $this->type;
+    }
+
+    public function setType(PrepaidCardType $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getStartTime(): ?\DateTimeInterface
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(?\DateTimeInterface $startTime): static
+    {
+        $this->startTime = $startTime;
+
+        return $this;
+    }
+
+    public function getExpireTime(): ?\DateTimeInterface
+    {
+        return $this->expireTime;
+    }
+
+    public function setExpireTime(?\DateTimeInterface $expireTime): static
+    {
+        $this->expireTime = $expireTime;
+
+        return $this;
+    }
+
+    public function getExpireDays(): ?int
+    {
+        return $this->expireDays;
+    }
+
+    public function setExpireDays(?int $expireDays): static
+    {
+        $this->expireDays = $expireDays;
+
+        return $this;
+    }
+
+    public function getMaxValidTime(): ?\DateTimeInterface
+    {
+        return $this->maxValidTime;
+    }
+
+    public function setMaxValidTime(?\DateTimeInterface $maxValidTime): static
+    {
+        $this->maxValidTime = $maxValidTime;
+
+        return $this;
+    }
+
+    public function getThumbUrl(): ?string
+    {
+        return $this->thumbUrl;
+    }
+
+    public function setThumbUrl(?string $thumbUrl): void
+    {
+        $this->thumbUrl = $thumbUrl;
+    }
+
+    /**
+     * @return Collection<int, Card>
+     */
+    public function getCards(): Collection
+    {
+        return $this->cards;
+    }
+
+    public function addCard(Card $card): static
+    {
+        if (!$this->cards->contains($card)) {
+            $this->cards->add($card);
+            $card->setPackage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCard(Card $card): static
+    {
+        if ($this->cards->removeElement($card)) {
+            // set the owning side to null (unless already changed)
+            if ($card->getPackage() === $this) {
+                $card->setPackage(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getExpireType(): PrepaidCardExpireType
+    {
+        return $this->expireType;
+    }
+
+    public function setExpireType(PrepaidCardExpireType $expireType): void
+    {
+        $this->expireType = $expireType;
+    }
+
+    public function getExpireNum(): int
+    {
+        return $this->expireNum;
+    }
+
+    public function setExpireNum(int $expireNum): void
+    {
+        $this->expireNum = $expireNum;
+    }
+
+    public function setCreateTime(?\DateTimeInterface $createdAt): void
+    {
+        $this->createTime = $createdAt;
+    }
+
+    public function getCreateTime(): ?\DateTimeInterface
+    {
+        return $this->createTime;
+    }
+
+    public function setUpdateTime(?\DateTimeInterface $updateTime): void
+    {
+        $this->updateTime = $updateTime;
+    }
+
+    public function getUpdateTime(): ?\DateTimeInterface
+    {
+        return $this->updateTime;
+    }
+
+    public function retrieveApiArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'parValue' => $this->getParValue(),
+            'thumbUrl' => $this->getThumbUrl(),
+        ];
+    }
+
+    public function retrieveAdminArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
+            'updateTime' => $this->getUpdateTime()?->format('Y-m-d H:i:s'),
+            'startTime' => $this->getStartTime()?->format('Y-m-d H:i:s'),
+            'expireTime' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
+            'valid' => $this->isValid(),
+            'packageId' => $this->getPackageId(),
+            'parValue' => $this->getParValue(),
+            'quantity' => $this->getQuantity(),
+            'expireDays' => $this->getExpireDays(),
+            'maxValidTime' => $this->getMaxValidTime()?->format('Y-m-d H:i:s'),
+            'type' => $this->getType()?->value,
+            'thumbUrl' => $this->getThumbUrl(),
+            'expireNum' => $this->getExpireNum(),
+            'expireType' => $this->getExpireType()?->value,
+        ];
+    }
+}
