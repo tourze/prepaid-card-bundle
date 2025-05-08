@@ -14,7 +14,6 @@ class PrepaidCardBundle extends Bundle implements BundleDependencyInterface
         return [
             \Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class => ['all' => true],
             \Tourze\Symfony\CronJob\CronJobBundle::class => ['all' => true],
-            \AntdCpBundle\AntdCpBundle::class => ['all' => true],
         ];
     }
 }
