@@ -2,7 +2,6 @@
 
 namespace PrepaidCardBundle\Entity;
 
-use AppBundle\Entity\BizUser;
 use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -10,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
 use PrepaidCardBundle\Repository\CardRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
@@ -99,7 +99,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ListColumn(title: '用户')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?BizUser $owner = null;
+    private ?UserInterface $owner = null;
 
     #[ExportColumn]
     #[ListColumn]
@@ -243,12 +243,12 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function getOwner(): ?BizUser
+    public function getOwner(): ?UserInterface
     {
         return $this->owner;
     }
 
-    public function setOwner(?BizUser $owner): static
+    public function setOwner(?UserInterface $owner): static
     {
         $this->owner = $owner;
 
