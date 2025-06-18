@@ -16,40 +16,23 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
 use Tourze\EasyAdmin\Attribute\Action\CurdAction;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
 use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '礼品卡活动')]
 #[Listable]
-#[Deletable]
-#[Creatable]
-#[Editable]
 #[ORM\Table(name: 'ims_prepaid_campaign', options: ['comment' => '礼品卡活动'])]
 #[ORM\Entity(repositoryClass: CampaignRepository::class)]
 class Campaign implements AdminArrayInterface, ApiArrayInterface
+, \Stringable
 {
     use TimestampableAware;
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
-    #[Keyword]
-    #[ListColumn]
-    #[FormField]
     #[ORM\Column(length: 100, options: ['comment' => '活动名称'])]
     private string $title;
 
@@ -61,19 +44,13 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
     private Collection $packages;
 
     #[Filterable(label: '礼品卡公司')]
-    #[ListColumn(title: '礼品卡公司')]
-    #[FormField(title: '礼品卡公司')]
     #[ORM\ManyToOne(inversedBy: 'campaigns')]
     private ?Company $company = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 9)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '活动生效时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '活动生效时间'])]
     private ?\DateTimeInterface $startTime = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 15)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '活动结束时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '活动结束时间'])]
     private ?\DateTimeInterface $expireTime = null;
 
     /**
@@ -83,17 +60,12 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
     #[ORM\OneToMany(mappedBy: 'campaign', targetEntity: Card::class)]
     private Collection $cards;
 
-    #[ListColumn]
-    #[FormField]
     #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '赠送优惠券ID'])]
     private ?array $giveCouponIds = [];
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -296,4 +268,9 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
         $this->giveCouponIds = $giveCouponIds;
 
         return $this;
-    }}
+    }
+    public function __toString(): string
+    {
+        return (string) $this->getId();
+    }
+}

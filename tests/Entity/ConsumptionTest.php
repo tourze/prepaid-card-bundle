@@ -76,7 +76,6 @@ class ConsumptionTest extends TestCase
         // 由于没有实际的ID，toString会返回空字符串
         // 这里我们主要测试方法不会抛出异常
         $result = (string) $this->consumption;
-        $this->assertIsString($result);
     }
 
     public function testRetrieveApiArray(): void
@@ -98,8 +97,6 @@ class ConsumptionTest extends TestCase
         $this->consumption->setContract($contract);
 
         $array = $this->consumption->retrieveApiArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('API测试消费', $array['title']);
         $this->assertEquals('API_ORDER_123', $array['orderId']);
         $this->assertEquals('-50.00', $array['cost']);
@@ -121,8 +118,6 @@ class ConsumptionTest extends TestCase
         $this->consumption->setCreateTime($createTime);
 
         $array = $this->consumption->retrieveAdminArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('管理员测试消费', $array['title']);
         $this->assertEquals('ADMIN_ORDER_123', $array['orderId']);
         $this->assertEquals('-75.50', $array['amount']);

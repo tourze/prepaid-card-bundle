@@ -32,7 +32,6 @@ class PrepaidCardExpireTypeTest extends TestCase
     {
         // 测试SAME_WITH_CARD
         $item = PrepaidCardExpireType::SAME_WITH_CARD->toSelectItem();
-        $this->assertIsArray($item);
         $this->assertEquals('同卡有效期', $item['label']);
         $this->assertEquals('同卡有效期', $item['text']);
         $this->assertEquals(1, $item['value']);
@@ -40,7 +39,6 @@ class PrepaidCardExpireTypeTest extends TestCase
 
         // 测试AFTER_ACTIVATION
         $item = PrepaidCardExpireType::AFTER_ACTIVATION->toSelectItem();
-        $this->assertIsArray($item);
         $this->assertEquals('激活后', $item['label']);
         $this->assertEquals('激活后', $item['text']);
         $this->assertEquals(2, $item['value']);
@@ -51,7 +49,6 @@ class PrepaidCardExpireTypeTest extends TestCase
     {
         foreach (PrepaidCardExpireType::cases() as $case) {
             $label = $case->getLabel();
-            $this->assertIsString($label);
             $this->assertNotEmpty($label);
         }
     }
@@ -60,13 +57,11 @@ class PrepaidCardExpireTypeTest extends TestCase
     {
         // 测试SAME_WITH_CARD
         $array = PrepaidCardExpireType::SAME_WITH_CARD->toArray();
-        $this->assertIsArray($array);
         $this->assertEquals(1, $array['value']);
         $this->assertEquals('同卡有效期', $array['label']);
 
         // 测试AFTER_ACTIVATION
         $array = PrepaidCardExpireType::AFTER_ACTIVATION->toArray();
-        $this->assertIsArray($array);
         $this->assertEquals(2, $array['value']);
         $this->assertEquals('激活后', $array['label']);
     }

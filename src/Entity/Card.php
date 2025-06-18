@@ -19,31 +19,21 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\EasyAdmin\Attribute\Action\CurdAction;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
 use Tourze\EasyAdmin\Attribute\Action\Exportable;
 use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
 use Tourze\EasyAdmin\Attribute\Filter\Filterable;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
 /**
  * @see https://blog.csdn.net/zhichaosong/article/details/120316738
  */
-#[AsPermission(title: '礼品卡')]
 #[Listable]
 #[Exportable]
-#[Editable]
 #[ORM\Table(name: 'ims_prepaid_card', options: ['comment' => '礼品卡'])]
 #[ORM\Entity(repositoryClass: CardRepository::class)]
 class Card implements ApiArrayInterface, AdminArrayInterface
+, \Stringable
 {
     use TimestampableAware;
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -51,59 +41,39 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     private ?string $id = null;
 
     #[Filterable(label: '礼品卡公司')]
-    #[ListColumn(title: '礼品卡公司')]
     #[ORM\ManyToOne(inversedBy: 'cards')]
     private ?Company $company = null;
 
     #[ORM\Column(length: 40, unique: true, options: ['comment' => '卡号'])]
     private string $cardNumber;
 
-    #[ExportColumn]
-    #[Keyword]
-    #[ListColumn]
     #[ORM\Column(length: 64, nullable: true, options: ['comment' => '卡密'])]
     private ?string $cardPassword = null;
 
-    #[ExportColumn]
-    #[ListColumn(sorter: true)]
-    #[FormField]
     #[TrackColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '面值'])]
     private ?string $parValue = null;
 
-    #[ExportColumn]
-    #[ListColumn(sorter: true)]
-    #[FormField]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '余额'])]
     private ?string $balance = null;
 
-    #[ExportColumn]
-    #[ListColumn]
     #[IndexColumn]
     #[TrackColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '绑定时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '绑定时间'])]
     private ?\DateTimeInterface $bindTime = null;
 
-    #[ExportColumn]
-    #[ListColumn]
-    #[FormField]
     #[IndexColumn]
     #[TrackColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '过期时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '过期时间'])]
     private ?\DateTimeInterface $expireTime = null;
 
-    #[ExportColumn]
     #[Filterable(label: '用户')]
-    #[ListColumn(title: '用户')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?UserInterface $owner = null;
 
-    #[ExportColumn]
-    #[ListColumn]
-    #[FormField]
     #[TrackColumn]
     #[ORM\Column(length: 30, nullable: true, enumType: PrepaidCardStatus::class, options: ['comment' => '状态'])]
     private ?PrepaidCardStatus $status = null;
@@ -122,12 +92,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ORM\ManyToOne(inversedBy: 'cards')]
     private ?Package $package = null;
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -372,5 +339,10 @@ class Card implements ApiArrayInterface, AdminArrayInterface
             'expireTime' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
             'status' => $this->getStatus()?->value,
         ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->getId();
     }
 }

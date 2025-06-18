@@ -147,8 +147,6 @@ class ContractTest extends TestCase
         $this->contract->setCostAmount('299.99');
 
         $array = $this->contract->retrieveApiArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('API_CONTRACT_001', $array['code']);
         $this->assertEquals('299.99', $array['costAmount']);
         $this->assertArrayHasKey('id', $array);
@@ -167,8 +165,6 @@ class ContractTest extends TestCase
         $this->contract->setCreateTime($createTime);
 
         $array = $this->contract->retrieveAdminArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('ADMIN_CONTRACT_001', $array['code']);
         $this->assertEquals('199.50', $array['costAmount']);
         $this->assertEquals('2024-06-01 16:45:30', $array['refundTime']);

@@ -122,7 +122,6 @@ class CompanyTest extends TestCase
         // 由于没有实际的ID，toString会返回空字符串
         // 这里我们主要测试方法不会抛出异常
         $result = (string) $this->company;
-        $this->assertIsString($result);
     }
 
     public function testRetrieveAdminArray(): void
@@ -136,8 +135,6 @@ class CompanyTest extends TestCase
         $this->company->setUpdateTime($updateTime);
 
         $array = $this->company->retrieveAdminArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('测试公司', $array['title']);
         $this->assertEquals('2024-01-01 08:00:00', $array['createTime']);
         $this->assertEquals('2024-01-01 09:00:00', $array['updateTime']);
@@ -149,8 +146,6 @@ class CompanyTest extends TestCase
         $this->company->setTitle('选择项测试公司');
 
         $selectItem = $this->company->toSelectItem();
-
-        $this->assertIsArray($selectItem);
         $this->assertEquals('选择项测试公司', $selectItem['label']);
         $this->assertEquals('选择项测试公司', $selectItem['text']);
         $this->assertEquals('选择项测试公司', $selectItem['name']);

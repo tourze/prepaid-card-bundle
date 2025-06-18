@@ -182,8 +182,6 @@ class CampaignTest extends TestCase
         $this->campaign->setCompany($company);
 
         $array = $this->campaign->retrieveAdminArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('测试活动', $array['title']);
         $this->assertEquals('2024-01-01 10:00:00', $array['startTime']);
         $this->assertEquals('2024-12-31 23:59:59', $array['expireTime']);
@@ -191,7 +189,6 @@ class CampaignTest extends TestCase
         $this->assertEquals(['COUPON001'], $array['giveCouponIds']);
         $this->assertEquals('2024-01-01 08:00:00', $array['createTime']);
         $this->assertEquals('2024-01-01 09:00:00', $array['updateTime']);
-        $this->assertIsArray($array['company']);
     }
 
     public function testRetrieveApiArray(): void
@@ -199,8 +196,6 @@ class CampaignTest extends TestCase
         $this->campaign->setTitle('测试活动');
 
         $array = $this->campaign->retrieveApiArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('测试活动', $array['title']);
         $this->assertArrayHasKey('id', $array);
     }

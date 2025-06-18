@@ -18,31 +18,17 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
 use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
 use Tourze\EasyAdmin\Attribute\Field\ImagePickerField;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '礼品卡码包')]
 #[Listable]
-#[Creatable]
-#[Editable]
-#[Deletable]
 #[ORM\Table(name: 'ims_prepaid_package', options: ['comment' => '礼品卡码包'])]
 #[ORM\Entity(repositoryClass: PackageRepository::class)]
 class Package implements ApiArrayInterface, AdminArrayInterface
+, \Stringable
 {
     use TimestampableAware;
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -55,45 +41,28 @@ class Package implements ApiArrayInterface, AdminArrayInterface
     private ?Campaign $campaign = null;
 
     #[IndexColumn]
-    #[Keyword]
-    #[ListColumn]
-    #[FormField(span: 10)]
     #[ORM\Column(length: 40, unique: true, options: ['comment' => '码包ID'])]
     private string $packageId;
 
     #[IndexColumn]
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 7)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '面值'])]
     private ?string $parValue = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 7)]
     #[ORM\Column(options: ['comment' => '数量'])]
     private int $quantity;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 9)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '卡有效起始时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '卡有效起始时间'])]
     private ?\DateTimeInterface $startTime = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 15)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '卡有效截止时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '卡有效截止时间'])]
     private ?\DateTimeInterface $expireTime = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 6)]
     #[ORM\Column(nullable: true, options: ['comment' => '余额有效期（天）'])]
     private ?int $expireDays = null;
 
-    #[ListColumn(sorter: true)]
-    #[FormField(span: 8)]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '最大有效时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '最大有效时间'])]
     private ?\DateTimeInterface $maxValidTime = null;
 
-    #[ListColumn]
-    #[FormField(span: 10)]
     #[ORM\Column(length: 20, enumType: PrepaidCardType::class, options: ['comment' => '类型'])]
     private PrepaidCardType $type;
 
@@ -105,8 +74,6 @@ class Package implements ApiArrayInterface, AdminArrayInterface
 
     #[ImagePickerField]
     #[PictureColumn]
-    #[ListColumn]
-    #[FormField]
     #[ORM\Column(length: 500, nullable: true, options: ['comment' => '缩略图'])]
     private ?string $thumbUrl = null;
 
@@ -116,12 +83,9 @@ class Package implements ApiArrayInterface, AdminArrayInterface
     #[ORM\OneToMany(mappedBy: 'package', targetEntity: Card::class)]
     private Collection $cards;
 
-    #[BoolColumn]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
@@ -372,5 +336,10 @@ class Package implements ApiArrayInterface, AdminArrayInterface
             'expireNum' => $this->getExpireNum(),
             'expireType' => $this->getExpireType()?->value,
         ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->getId();
     }
 }

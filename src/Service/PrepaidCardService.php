@@ -65,7 +65,7 @@ class PrepaidCardService
         $contract = new Contract();
         // 一般来讲，一个订单只会有一笔预付单
         $contract->setCode($orderId);
-        $contract->setCostAmount($costValue);
+        $contract->setCostAmount((string) $costValue);
         $this->entityManager->persist($contract);
         $this->entityManager->flush();
 
@@ -98,8 +98,8 @@ class PrepaidCardService
             $consumption->setTitle("订单: {$orderId}");
             $consumption->setOrderId($orderId);
             // 数据库记录的总是负数
-            $consumption->setAmount(-$v);
-            $consumption->setRefundableAmount($v);
+            $consumption->setAmount((string) (-$v));
+            $consumption->setRefundableAmount((string) $v);
             $consumption->setContract($contract);
 
             $this->entityManager->persist($consumption);
@@ -169,8 +169,8 @@ class PrepaidCardService
             $backLog->setCard($card);
             $backLog->setTitle("{$consumption->getTitle()} - 退还");
             $backLog->setOrderId($consumption->getOrderId());
-            $backLog->setAmount($v);
-            $backLog->setRefundableAmount(0);
+            $backLog->setAmount((string) $v);
+            $backLog->setRefundableAmount('0');
             $backLog->setContract($contract);
             $this->entityManager->persist($backLog);
         } else {
@@ -196,8 +196,8 @@ class PrepaidCardService
                 $backLog->setCard($card);
                 $backLog->setTitle("{$consumption->getTitle()} - 退还");
                 $backLog->setOrderId($consumption->getOrderId());
-                $backLog->setAmount($v);
-                $backLog->setRefundableAmount(0);
+                $backLog->setAmount((string) $v);
+                $backLog->setRefundableAmount('0');
                 $backLog->setContract($contract);
                 $this->entityManager->persist($backLog);
             }

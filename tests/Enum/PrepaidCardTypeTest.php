@@ -32,7 +32,6 @@ class PrepaidCardTypeTest extends TestCase
     {
         // 测试ONE_TIME
         $item = PrepaidCardType::ONE_TIME->toSelectItem();
-        $this->assertIsArray($item);
         $this->assertEquals('一次性全额付款', $item['label']);
         $this->assertEquals('一次性全额付款', $item['text']);
         $this->assertEquals('one-time', $item['value']);
@@ -40,7 +39,6 @@ class PrepaidCardTypeTest extends TestCase
 
         // 测试AFTER
         $item = PrepaidCardType::AFTER->toSelectItem();
-        $this->assertIsArray($item);
         $this->assertEquals('定金后期结算', $item['label']);
         $this->assertEquals('定金后期结算', $item['text']);
         $this->assertEquals('after', $item['value']);
@@ -51,7 +49,6 @@ class PrepaidCardTypeTest extends TestCase
     {
         foreach (PrepaidCardType::cases() as $case) {
             $label = $case->getLabel();
-            $this->assertIsString($label);
             $this->assertNotEmpty($label);
         }
     }
@@ -60,13 +57,11 @@ class PrepaidCardTypeTest extends TestCase
     {
         // 测试ONE_TIME
         $array = PrepaidCardType::ONE_TIME->toArray();
-        $this->assertIsArray($array);
         $this->assertEquals('one-time', $array['value']);
         $this->assertEquals('一次性全额付款', $array['label']);
 
         // 测试AFTER
         $array = PrepaidCardType::AFTER->toArray();
-        $this->assertIsArray($array);
         $this->assertEquals('after', $array['value']);
         $this->assertEquals('定金后期结算', $array['label']);
     }

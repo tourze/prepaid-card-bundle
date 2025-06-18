@@ -13,18 +13,12 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '消费记录')]
 #[Listable]
 #[ORM\Table(name: 'ims_prepaid_consumption', options: ['comment' => '消费记录'])]
 #[ORM\Entity(repositoryClass: ConsumptionRepository::class)]
 class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
@@ -35,15 +29,12 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Card $card;
 
-    #[ListColumn]
     #[ORM\Column(length: 100, options: ['comment' => '标题'])]
     private string $title;
 
-    #[ListColumn]
     #[ORM\Column(length: 40, nullable: true, options: ['comment' => '关联订单ID'])]
     private ?string $orderId = null;
 
-    #[ListColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '费用'])]
     private string $amount;
 
@@ -51,11 +42,9 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[ORM\JoinColumn(nullable: false)]
     private ?Contract $contract = null;
 
-    #[ListColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '可退款金额'])]
     private ?string $refundableAmount = null;
 
-    #[ListColumn(order: 99)]
     #[CreateIpColumn]
     #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
@@ -65,10 +54,8 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     private ?string $createdBy = null;
 
     #[IndexColumn]
-    #[ListColumn(order: 98, sorter: true)]
-    #[ExportColumn]
     #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
     private ?\DateTimeInterface $createTime = null;
 
     public function __toString(): string

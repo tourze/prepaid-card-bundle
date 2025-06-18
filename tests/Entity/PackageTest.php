@@ -160,8 +160,6 @@ class PackageTest extends TestCase
         $this->package->setThumbUrl('https://example.com/api-thumb.jpg');
 
         $array = $this->package->retrieveApiArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('50.00', $array['parValue']);
         $this->assertEquals('https://example.com/api-thumb.jpg', $array['thumbUrl']);
         $this->assertArrayHasKey('id', $array);
@@ -193,8 +191,6 @@ class PackageTest extends TestCase
         $this->package->setUpdateTime($updateTime);
 
         $array = $this->package->retrieveAdminArray();
-
-        $this->assertIsArray($array);
         $this->assertEquals('ADMIN_PKG_001', $array['packageId']);
         $this->assertEquals('200.00', $array['parValue']);
         $this->assertEquals(100, $array['quantity']);

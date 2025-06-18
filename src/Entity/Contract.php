@@ -17,20 +17,13 @@ use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 
-#[AsPermission(title: '预付卡订单')]
 #[Listable]
 #[ORM\Table(name: 'ims_prepaid_contract', options: ['comment' => '预付订单'])]
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
 class Contract implements ApiArrayInterface, AdminArrayInterface
+, \Stringable
 {
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
@@ -38,17 +31,12 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
 
     #[RandomStringColumn(length: 10)]
     #[Groups(['admin_curd'])]
-    #[FormField(title: '编码', order: -1)]
-    #[Keyword]
-    #[ListColumn(order: -1)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, nullable: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
-    #[ListColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '退款时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '退款时间'])]
     private ?\DateTimeInterface $refundTime = null;
 
-    #[ListColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '总费用'])]
     private string $costAmount;
 
@@ -56,11 +44,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
      * @var Collection<int, Consumption>
      */
     #[Ignore]
-    #[ListColumn(title: '流水')]
     #[ORM\OneToMany(mappedBy: 'contract', targetEntity: Consumption::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $consumptions;
 
-    #[ListColumn(order: 99)]
     #[CreateIpColumn]
     #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
@@ -70,10 +56,8 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
     private ?string $createdBy = null;
 
     #[IndexColumn]
-    #[ListColumn(order: 98, sorter: true)]
-    #[ExportColumn]
     #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
     private ?\DateTimeInterface $createTime = null;
 
     public function __construct()
@@ -216,5 +200,10 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
             'createTime' => $this->getCreateTime()?->format('Y-m-d H:i:s'),
             'createdFromIp' => $this->getCreatedFromIp(),
         ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->getId();
     }
 }
