@@ -16,11 +16,7 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\CurdAction;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 
-#[Listable]
 #[ORM\Table(name: 'ims_prepaid_campaign', options: ['comment' => '礼品卡活动'])]
 #[ORM\Entity(repositoryClass: CampaignRepository::class)]
 class Campaign implements AdminArrayInterface, ApiArrayInterface
@@ -39,11 +35,9 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
     /**
      * @var Collection<int, Package>
      */
-    #[CurdAction(label: '码包配置')]
     #[ORM\OneToMany(mappedBy: 'campaign', targetEntity: Package::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $packages;
 
-    #[Filterable(label: '礼品卡公司')]
     #[ORM\ManyToOne(inversedBy: 'campaigns')]
     private ?Company $company = null;
 

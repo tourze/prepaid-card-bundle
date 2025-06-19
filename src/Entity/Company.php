@@ -14,10 +14,8 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
 use Tourze\EnumExtra\Itemable;
 
-#[Listable]
 #[ORM\Table(name: 'ims_prepaid_company', options: ['comment' => '预付卡公司'])]
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 class Company implements AdminArrayInterface, \Stringable, Itemable

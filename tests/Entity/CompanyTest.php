@@ -24,11 +24,11 @@ class CompanyTest extends TestCase
         $this->company->setTitle('测试公司');
         $this->assertEquals('测试公司', $this->company->getTitle());
 
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         $this->company->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->company->getCreateTime());
 
-        $updateTime = new \DateTime();
+        $updateTime = new \DateTimeImmutable();
         $this->company->setUpdateTime($updateTime);
         $this->assertEquals($updateTime, $this->company->getUpdateTime());
 
@@ -129,9 +129,9 @@ class CompanyTest extends TestCase
         // 设置测试数据
         $this->company->setTitle('测试公司');
         
-        $createTime = new \DateTime('2024-01-01 08:00:00');
+        $createTime = new \DateTimeImmutable('2024-01-01 08:00:00');
         $this->company->setCreateTime($createTime);
-        $updateTime = new \DateTime('2024-01-01 09:00:00');
+        $updateTime = new \DateTimeImmutable('2024-01-01 09:00:00');
         $this->company->setUpdateTime($updateTime);
 
         $array = $this->company->retrieveAdminArray();
@@ -184,8 +184,8 @@ class CompanyTest extends TestCase
     public function testTimeHandling(): void
     {
         // 测试时间处理
-        $createTime = new \DateTime('2024-01-01 00:00:00');
-        $updateTime = new \DateTime('2024-01-01 12:00:00');
+        $createTime = new \DateTimeImmutable('2024-01-01 00:00:00');
+        $updateTime = new \DateTimeImmutable('2024-01-01 12:00:00');
 
         $this->company->setCreateTime($createTime);
         $this->company->setUpdateTime($updateTime);

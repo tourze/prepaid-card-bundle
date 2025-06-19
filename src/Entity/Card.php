@@ -2,7 +2,7 @@
 
 namespace PrepaidCardBundle\Entity;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -18,16 +18,10 @@ use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\CurdAction;
-use Tourze\EasyAdmin\Attribute\Action\Exportable;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Filter\Filterable;
 
 /**
  * @see https://blog.csdn.net/zhichaosong/article/details/120316738
  */
-#[Listable]
-#[Exportable]
 #[ORM\Table(name: 'ims_prepaid_card', options: ['comment' => '礼品卡'])]
 #[ORM\Entity(repositoryClass: CardRepository::class)]
 class Card implements ApiArrayInterface, AdminArrayInterface
@@ -40,7 +34,6 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
-    #[Filterable(label: '礼品卡公司')]
     #[ORM\ManyToOne(inversedBy: 'cards')]
     private ?Company $company = null;
 
@@ -69,7 +62,6 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '过期时间'])]
     private ?\DateTimeImmutable $expireTime = null;
 
-    #[Filterable(label: '用户')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?UserInterface $owner = null;
@@ -81,7 +73,6 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     /**
      * @var Collection<int, Consumption>
      */
-    #[CurdAction(label: '消费记录')]
     #[Ignore]
     #[ORM\OneToMany(mappedBy: 'card', targetEntity: Consumption::class, orphanRemoval: true)]
     private Collection $consumptions;
@@ -293,7 +284,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
 
     public function checkStatus(): void
     {
-        $now = Carbon::now();
+        $now = CarbonImmutable::now();
         if ($now->greaterThan($this->getExpireTime())) {
             $this->setStatus(PrepaidCardStatus::EXPIRED);
         } else {

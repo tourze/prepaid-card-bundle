@@ -38,7 +38,7 @@ class ConsumptionTest extends TestCase
         $this->consumption->setCreatedBy('user123');
         $this->assertEquals('user123', $this->consumption->getCreatedBy());
 
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         $this->consumption->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->consumption->getCreateTime());
     }
@@ -85,7 +85,7 @@ class ConsumptionTest extends TestCase
         $this->consumption->setOrderId('API_ORDER_123');
         $this->consumption->setAmount('-50.00');
 
-        $createTime = new \DateTime('2024-01-01 10:00:00');
+        $createTime = new \DateTimeImmutable('2024-01-01 10:00:00');
         $this->consumption->setCreateTime($createTime);
 
         // 模拟Contract
@@ -114,7 +114,7 @@ class ConsumptionTest extends TestCase
         $this->consumption->setRefundableAmount('25.00');
         $this->consumption->setCreatedFromIp('192.168.1.100');
 
-        $createTime = new \DateTime('2024-01-01 15:30:45');
+        $createTime = new \DateTimeImmutable('2024-01-01 15:30:45');
         $this->consumption->setCreateTime($createTime);
 
         $array = $this->consumption->retrieveAdminArray();
@@ -204,7 +204,7 @@ class ConsumptionTest extends TestCase
     public function testTimeHandling(): void
     {
         // 测试时间处理
-        $createTime = new \DateTime('2024-01-01 12:30:45');
+        $createTime = new \DateTimeImmutable('2024-01-01 12:30:45');
         $this->consumption->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->consumption->getCreateTime());
 

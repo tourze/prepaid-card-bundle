@@ -51,11 +51,11 @@ class CardTest extends TestCase
         $this->card->setBalance('100.00');
         $this->assertEquals('100.00', $this->card->getBalance());
 
-        $now = new \DateTime();
+        $now = new \DateTimeImmutable();
         $this->card->setBindTime($now);
         $this->assertEquals($now, $this->card->getBindTime());
 
-        $expireTime = new \DateTime('+1 year');
+        $expireTime = new \DateTimeImmutable('+1 year');
         $this->card->setExpireTime($expireTime);
         $this->assertEquals($expireTime, $this->card->getExpireTime());
 
@@ -65,11 +65,11 @@ class CardTest extends TestCase
         $this->card->setValid(true);
         $this->assertTrue($this->card->isValid());
 
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         $this->card->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->card->getCreateTime());
 
-        $updateTime = new \DateTime();
+        $updateTime = new \DateTimeImmutable();
         $this->card->setUpdateTime($updateTime);
         $this->assertEquals($updateTime, $this->card->getUpdateTime());
 
@@ -120,7 +120,7 @@ class CardTest extends TestCase
     public function testCheckStatus_whenExpired(): void
     {
         // 设置过期时间为过去
-        $pastDate = new \DateTime('-1 day');
+        $pastDate = new \DateTimeImmutable('-1 day');
         $this->card->setExpireTime($pastDate);
         $this->card->setBalance('100.00');
         $this->card->setStatus(PrepaidCardStatus::VALID);
@@ -135,7 +135,7 @@ class CardTest extends TestCase
     public function testCheckStatus_whenEmpty(): void
     {
         // 设置余额为0
-        $futureDate = new \DateTime('+1 day');
+        $futureDate = new \DateTimeImmutable('+1 day');
         $this->card->setExpireTime($futureDate);
         $this->card->setBalance('0.00');
         $this->card->setStatus(PrepaidCardStatus::VALID);
@@ -150,7 +150,7 @@ class CardTest extends TestCase
     public function testCheckStatus_whenValid(): void
     {
         // 设置有效卡片
-        $futureDate = new \DateTime('+1 day');
+        $futureDate = new \DateTimeImmutable('+1 day');
         $this->card->setExpireTime($futureDate);
         $this->card->setBalance('100.00');
         $this->card->setStatus(PrepaidCardStatus::INIT);
@@ -173,6 +173,13 @@ class CardTest extends TestCase
         $array = $this->card->retrieveApiArray();
 
         // 检查关键字段是否存在
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('cardNumber', $array);
+        $this->assertArrayHasKey('parValue', $array);
+        $this->assertArrayHasKey('balance', $array);
+        $this->assertEquals('CARD123456', $array['cardNumber']);
+        $this->assertEquals('100.00', $array['parValue']);
+        $this->assertEquals('100.00', $array['balance']);
     }
 
     public function testRetrieveAdminArray(): void
@@ -186,5 +193,12 @@ class CardTest extends TestCase
         $array = $this->card->retrieveAdminArray();
 
         // 检查是否为数组
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('cardNumber', $array);
+        $this->assertArrayHasKey('parValue', $array);
+        $this->assertArrayHasKey('balance', $array);
+        $this->assertEquals('CARD123456', $array['cardNumber']);
+        $this->assertEquals('100.00', $array['parValue']);
+        $this->assertEquals('100.00', $array['balance']);
     }
 }

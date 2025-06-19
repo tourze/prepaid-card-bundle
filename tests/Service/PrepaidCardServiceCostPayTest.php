@@ -139,7 +139,7 @@ class PrepaidCardServiceCostPayTest extends TestCase
         $card = new Card();
         $card->setBalance('100.00');
         $card->setStatus(PrepaidCardStatus::VALID);
-        $card->setExpireTime(new \DateTime('+1 year')); // 设置过期时间
+        $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $query->expects($this->once())
             ->method('getResult')
@@ -248,12 +248,12 @@ class PrepaidCardServiceCostPayTest extends TestCase
         $card1 = new Card();
         $card1->setBalance('30.00');
         $card1->setStatus(PrepaidCardStatus::VALID);
-        $card1->setExpireTime(new \DateTime('+1 year')); // 设置过期时间
+        $card1->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $card2 = new Card();
         $card2->setBalance('70.00');
         $card2->setStatus(PrepaidCardStatus::VALID);
-        $card2->setExpireTime(new \DateTime('+2 years')); // 设置过期时间
+        $card2->setExpireTime(new \DateTimeImmutable('+2 years')); // 设置过期时间
 
         $query->expects($this->once())
             ->method('getResult')
@@ -366,7 +366,7 @@ class PrepaidCardServiceCostPayTest extends TestCase
         $card = new Card();
         $card->setBalance('50.00');
         $card->setStatus(PrepaidCardStatus::VALID);
-        $card->setExpireTime(new \DateTime('+1 year')); // 设置过期时间
+        $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $query->expects($this->once())
             ->method('getResult')
@@ -604,7 +604,7 @@ class PrepaidCardServiceCostPayTest extends TestCase
         $card = new Card();
         $card->setBalance('100.00');
         $card->setStatus(PrepaidCardStatus::VALID);
-        $card->setExpireTime(new \DateTime('+1 year')); // 设置过期时间
+        $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $query->expects($this->once())
             ->method('getResult')

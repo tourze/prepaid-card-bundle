@@ -12,9 +12,7 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
 
-#[Listable]
 #[ORM\Table(name: 'ims_prepaid_consumption', options: ['comment' => '消费记录'])]
 #[ORM\Entity(repositoryClass: ConsumptionRepository::class)]
 class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable

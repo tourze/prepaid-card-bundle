@@ -16,9 +16,7 @@ use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
 
-#[Listable]
 #[ORM\Table(name: 'ims_prepaid_contract', options: ['comment' => '预付订单'])]
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
 class Contract implements ApiArrayInterface, AdminArrayInterface

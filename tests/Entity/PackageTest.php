@@ -122,11 +122,11 @@ class PackageTest extends TestCase
     public function testTimeHandling(): void
     {
         // 测试时间字段处理
-        $startTime = new \DateTime('2024-01-01 00:00:00');
-        $expireTime = new \DateTime('2024-12-31 23:59:59');
-        $maxValidTime = new \DateTime('2025-06-30 12:00:00');
-        $createTime = new \DateTime('2024-01-01 08:00:00');
-        $updateTime = new \DateTime('2024-01-01 09:00:00');
+        $startTime = new \DateTimeImmutable('2024-01-01 00:00:00');
+        $expireTime = new \DateTimeImmutable('2024-12-31 23:59:59');
+        $maxValidTime = new \DateTimeImmutable('2025-06-30 12:00:00');
+        $createTime = new \DateTimeImmutable('2024-01-01 08:00:00');
+        $updateTime = new \DateTimeImmutable('2024-01-01 09:00:00');
 
         $this->package->setStartTime($startTime);
         $this->package->setExpireTime($expireTime);
@@ -178,11 +178,11 @@ class PackageTest extends TestCase
         $this->package->setType(PrepaidCardType::ONE_TIME);
         $this->package->setExpireType(PrepaidCardExpireType::AFTER_ACTIVATION);
 
-        $startTime = new \DateTime('2024-02-01 10:00:00');
-        $expireTime = new \DateTime('2024-11-30 18:00:00');
-        $maxValidTime = new \DateTime('2025-05-15 23:59:59');
-        $createTime = new \DateTime('2024-01-15 14:30:45');
-        $updateTime = new \DateTime('2024-01-20 16:45:30');
+        $startTime = new \DateTimeImmutable('2024-02-01 10:00:00');
+        $expireTime = new \DateTimeImmutable('2024-11-30 18:00:00');
+        $maxValidTime = new \DateTimeImmutable('2025-05-15 23:59:59');
+        $createTime = new \DateTimeImmutable('2024-01-15 14:30:45');
+        $updateTime = new \DateTimeImmutable('2024-01-20 16:45:30');
 
         $this->package->setStartTime($startTime);
         $this->package->setExpireTime($expireTime);

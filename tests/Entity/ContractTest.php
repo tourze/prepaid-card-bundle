@@ -26,7 +26,7 @@ class ContractTest extends TestCase
         $this->contract->setCostAmount('150.75');
         $this->assertEquals('150.75', $this->contract->getCostAmount());
 
-        $refundTime = new \DateTime('2024-06-15 14:30:00');
+        $refundTime = new \DateTimeImmutable('2024-06-15 14:30:00');
         $this->contract->setRefundTime($refundTime);
         $this->assertEquals($refundTime, $this->contract->getRefundTime());
 
@@ -36,7 +36,7 @@ class ContractTest extends TestCase
         $this->contract->setCreatedBy('user456');
         $this->assertEquals('user456', $this->contract->getCreatedBy());
 
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         $this->contract->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->contract->getCreateTime());
     }
@@ -158,10 +158,10 @@ class ContractTest extends TestCase
         $this->contract->setCostAmount('199.50');
         $this->contract->setCreatedFromIp('10.0.0.1');
 
-        $refundTime = new \DateTime('2024-06-01 16:45:30');
+        $refundTime = new \DateTimeImmutable('2024-06-01 16:45:30');
         $this->contract->setRefundTime($refundTime);
 
-        $createTime = new \DateTime('2024-05-01 10:15:20');
+        $createTime = new \DateTimeImmutable('2024-05-01 10:15:20');
         $this->contract->setCreateTime($createTime);
 
         $array = $this->contract->retrieveAdminArray();
@@ -224,8 +224,8 @@ class ContractTest extends TestCase
     public function testTimeHandling(): void
     {
         // 测试时间处理
-        $refundTime = new \DateTime('2024-06-15 09:30:45');
-        $createTime = new \DateTime('2024-05-01 14:20:10');
+        $refundTime = new \DateTimeImmutable('2024-06-15 09:30:45');
+        $createTime = new \DateTimeImmutable('2024-05-01 14:20:10');
 
         $this->contract->setRefundTime($refundTime);
         $this->contract->setCreateTime($createTime);

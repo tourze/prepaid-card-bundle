@@ -25,11 +25,11 @@ class CampaignTest extends TestCase
         $this->campaign->setTitle('春节活动');
         $this->assertEquals('春节活动', $this->campaign->getTitle());
 
-        $startTime = new \DateTime('2024-01-01');
+        $startTime = new \DateTimeImmutable('2024-01-01');
         $this->campaign->setStartTime($startTime);
         $this->assertEquals($startTime, $this->campaign->getStartTime());
 
-        $expireTime = new \DateTime('2024-12-31');
+        $expireTime = new \DateTimeImmutable('2024-12-31');
         $this->campaign->setExpireTime($expireTime);
         $this->assertEquals($expireTime, $this->campaign->getExpireTime());
 
@@ -40,11 +40,11 @@ class CampaignTest extends TestCase
         $this->campaign->setValid(true);
         $this->assertTrue($this->campaign->isValid());
 
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         $this->campaign->setCreateTime($createTime);
         $this->assertEquals($createTime, $this->campaign->getCreateTime());
 
-        $updateTime = new \DateTime();
+        $updateTime = new \DateTimeImmutable();
         $this->campaign->setUpdateTime($updateTime);
         $this->assertEquals($updateTime, $this->campaign->getUpdateTime());
 
@@ -161,16 +161,16 @@ class CampaignTest extends TestCase
     {
         // 设置测试数据
         $this->campaign->setTitle('测试活动');
-        $startTime = new \DateTime('2024-01-01 10:00:00');
+        $startTime = new \DateTimeImmutable('2024-01-01 10:00:00');
         $this->campaign->setStartTime($startTime);
-        $expireTime = new \DateTime('2024-12-31 23:59:59');
+        $expireTime = new \DateTimeImmutable('2024-12-31 23:59:59');
         $this->campaign->setExpireTime($expireTime);
         $this->campaign->setValid(true);
         $this->campaign->setGiveCouponIds(['COUPON001']);
 
-        $createTime = new \DateTime('2024-01-01 08:00:00');
+        $createTime = new \DateTimeImmutable('2024-01-01 08:00:00');
         $this->campaign->setCreateTime($createTime);
-        $updateTime = new \DateTime('2024-01-01 09:00:00');
+        $updateTime = new \DateTimeImmutable('2024-01-01 09:00:00');
         $this->campaign->setUpdateTime($updateTime);
 
         // 模拟公司
@@ -220,8 +220,8 @@ class CampaignTest extends TestCase
     public function testTimeHandling(): void
     {
         // 测试时间处理
-        $startTime = new \DateTime('2024-01-01 00:00:00');
-        $expireTime = new \DateTime('2024-12-31 23:59:59');
+        $startTime = new \DateTimeImmutable('2024-01-01 00:00:00');
+        $expireTime = new \DateTimeImmutable('2024-12-31 23:59:59');
 
         $this->campaign->setStartTime($startTime);
         $this->campaign->setExpireTime($expireTime);

@@ -18,11 +18,7 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Listable;
-use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
-use Tourze\EasyAdmin\Attribute\Field\ImagePickerField;
 
-#[Listable]
 #[ORM\Table(name: 'ims_prepaid_package', options: ['comment' => '礼品卡码包'])]
 #[ORM\Entity(repositoryClass: PackageRepository::class)]
 class Package implements ApiArrayInterface, AdminArrayInterface
@@ -72,8 +68,6 @@ class Package implements ApiArrayInterface, AdminArrayInterface
     #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 0, 'comment' => '天数'])]
     private int $expireNum;
 
-    #[ImagePickerField]
-    #[PictureColumn]
     #[ORM\Column(length: 500, nullable: true, options: ['comment' => '缩略图'])]
     private ?string $thumbUrl = null;
 

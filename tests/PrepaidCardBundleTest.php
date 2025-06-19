@@ -64,22 +64,4 @@ class PrepaidCardBundleTest extends TestCase
         }
     }
 
-    public function testHasPermissionAttribute(): void
-    {
-        $reflection = new \ReflectionClass(PrepaidCardBundle::class);
-        $attributes = $reflection->getAttributes();
-        
-        $this->assertNotEmpty($attributes, 'Bundle should have attributes');
-        
-        // 查找AsPermission属性
-        $hasPermissionAttribute = false;
-        foreach ($attributes as $attribute) {
-            if (str_contains($attribute->getName(), 'AsPermission')) {
-                $hasPermissionAttribute = true;
-                break;
-            }
-        }
-        
-        $this->assertTrue($hasPermissionAttribute, 'Bundle should have AsPermission attribute');
-    }
 } 

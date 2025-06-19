@@ -2,7 +2,7 @@
 
 namespace PrepaidCardBundle\Command;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PrepaidCardBundle\Entity\Card;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
@@ -34,7 +34,7 @@ class PrepaidCardExpireCheckCommand extends Command
             ->andWhere('a.expireTime IS NOT NULL')
             ->andWhere('a.expireTime <= :now')
             ->setParameter('status', PrepaidCardStatus::VALID)
-            ->setParameter('now', Carbon::now())
+            ->setParameter('now', CarbonImmutable::now())
             ->setMaxResults(500);
         foreach ($qb->getQuery()->getResult() as $card) {
             /* @var Card $card */

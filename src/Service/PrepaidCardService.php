@@ -2,7 +2,7 @@
 
 namespace PrepaidCardBundle\Service;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -143,7 +143,7 @@ class PrepaidCardService
         // 如果没有可退款的消费记录，直接退出
         if (empty($consumptions) || $actualRefundAmount <= 0) {
             // 记录退款时间
-            $contract->setRefundTime(Carbon::now());
+            $contract->setRefundTime(CarbonImmutable::now());
             $this->entityManager->persist($contract);
             $this->entityManager->flush();
             return $realBack;
@@ -204,7 +204,7 @@ class PrepaidCardService
         }
         
         // 记录退款时间
-        $contract->setRefundTime(Carbon::now());
+        $contract->setRefundTime(CarbonImmutable::now());
         $this->entityManager->persist($contract);
         
         $this->entityManager->flush();
