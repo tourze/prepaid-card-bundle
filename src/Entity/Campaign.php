@@ -48,10 +48,10 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
     private ?Company $company = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '活动生效时间'])]
-    private ?\DateTimeInterface $startTime = null;
+    private ?\DateTimeImmutable $startTime = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '活动结束时间'])]
-    private ?\DateTimeInterface $expireTime = null;
+    private ?\DateTimeImmutable $expireTime = null;
 
     /**
      * @var Collection<int, Card>
@@ -177,24 +177,24 @@ class Campaign implements AdminArrayInterface, ApiArrayInterface
         return $this;
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTimeInterface $startTime): static
+    public function setStartTime(?\DateTimeImmutable $startTime): static
     {
         $this->startTime = $startTime;
 
         return $this;
     }
 
-    public function getExpireTime(): ?\DateTimeInterface
+    public function getExpireTime(): ?\DateTimeImmutable
     {
         return $this->expireTime;
     }
 
-    public function setExpireTime(?\DateTimeInterface $expireTime): static
+    public function setExpireTime(?\DateTimeImmutable $expireTime): static
     {
         $this->expireTime = $expireTime;
 

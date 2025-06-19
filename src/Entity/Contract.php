@@ -35,7 +35,7 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
     private ?string $code = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '退款时间'])]
-    private ?\DateTimeInterface $refundTime = null;
+    private ?\DateTimeImmutable $refundTime = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '总费用'])]
     private string $costAmount;
@@ -58,7 +58,7 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
     #[IndexColumn]
     #[CreateTimeColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeInterface $createTime = null;
+    private ?\DateTimeImmutable $createTime = null;
 
     public function __construct()
     {
@@ -112,12 +112,12 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function getRefundTime(): ?\DateTimeInterface
+    public function getRefundTime(): ?\DateTimeImmutable
     {
         return $this->refundTime;
     }
 
-    public function setRefundTime(?\DateTimeInterface $refundTime): static
+    public function setRefundTime(?\DateTimeImmutable $refundTime): static
     {
         $this->refundTime = $refundTime;
 
@@ -169,14 +169,14 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this->createdBy;
     }
 
-    public function setCreateTime(?\DateTimeInterface $createdAt): self
+    public function setCreateTime(?\DateTimeImmutable $createdAt): self
     {
         $this->createTime = $createdAt;
 
         return $this;
     }
 
-    public function getCreateTime(): ?\DateTimeInterface
+    public function getCreateTime(): ?\DateTimeImmutable
     {
         return $this->createTime;
     }

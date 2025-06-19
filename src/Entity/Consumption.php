@@ -56,7 +56,7 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[IndexColumn]
     #[CreateTimeColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeInterface $createTime = null;
+    private ?\DateTimeImmutable $createTime = null;
 
     public function __toString(): string
     {
@@ -72,14 +72,14 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->id;
     }
 
-    public function setCreateTime(?\DateTimeInterface $createdAt): self
+    public function setCreateTime(?\DateTimeImmutable $createdAt): self
     {
         $this->createTime = $createdAt;
 
         return $this;
     }
 
-    public function getCreateTime(): ?\DateTimeInterface
+    public function getCreateTime(): ?\DateTimeImmutable
     {
         return $this->createTime;
     }

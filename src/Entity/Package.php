@@ -52,16 +52,16 @@ class Package implements ApiArrayInterface, AdminArrayInterface
     private int $quantity;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '卡有效起始时间'])]
-    private ?\DateTimeInterface $startTime = null;
+    private ?\DateTimeImmutable $startTime = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '卡有效截止时间'])]
-    private ?\DateTimeInterface $expireTime = null;
+    private ?\DateTimeImmutable $expireTime = null;
 
     #[ORM\Column(nullable: true, options: ['comment' => '余额有效期（天）'])]
     private ?int $expireDays = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '最大有效时间'])]
-    private ?\DateTimeInterface $maxValidTime = null;
+    private ?\DateTimeImmutable $maxValidTime = null;
 
     #[ORM\Column(length: 20, enumType: PrepaidCardType::class, options: ['comment' => '类型'])]
     private PrepaidCardType $type;
@@ -202,24 +202,24 @@ class Package implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function getStartTime(): ?\DateTimeImmutable
     {
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTimeInterface $startTime): static
+    public function setStartTime(?\DateTimeImmutable $startTime): static
     {
         $this->startTime = $startTime;
 
         return $this;
     }
 
-    public function getExpireTime(): ?\DateTimeInterface
+    public function getExpireTime(): ?\DateTimeImmutable
     {
         return $this->expireTime;
     }
 
-    public function setExpireTime(?\DateTimeInterface $expireTime): static
+    public function setExpireTime(?\DateTimeImmutable $expireTime): static
     {
         $this->expireTime = $expireTime;
 
@@ -238,12 +238,12 @@ class Package implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function getMaxValidTime(): ?\DateTimeInterface
+    public function getMaxValidTime(): ?\DateTimeImmutable
     {
         return $this->maxValidTime;
     }
 
-    public function setMaxValidTime(?\DateTimeInterface $maxValidTime): static
+    public function setMaxValidTime(?\DateTimeImmutable $maxValidTime): static
     {
         $this->maxValidTime = $maxValidTime;
 

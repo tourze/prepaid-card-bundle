@@ -62,12 +62,12 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '绑定时间'])]
-    private ?\DateTimeInterface $bindTime = null;
+    private ?\DateTimeImmutable $bindTime = null;
 
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '过期时间'])]
-    private ?\DateTimeInterface $expireTime = null;
+    private ?\DateTimeImmutable $expireTime = null;
 
     #[Filterable(label: '用户')]
     #[ORM\ManyToOne]
@@ -171,24 +171,24 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function getBindTime(): ?\DateTimeInterface
+    public function getBindTime(): ?\DateTimeImmutable
     {
         return $this->bindTime;
     }
 
-    public function setBindTime(?\DateTimeInterface $bindTime): static
+    public function setBindTime(?\DateTimeImmutable $bindTime): static
     {
         $this->bindTime = $bindTime;
 
         return $this;
     }
 
-    public function getExpireTime(): ?\DateTimeInterface
+    public function getExpireTime(): ?\DateTimeImmutable
     {
         return $this->expireTime;
     }
 
-    public function setExpireTime(?\DateTimeInterface $expireTime): static
+    public function setExpireTime(?\DateTimeImmutable $expireTime): static
     {
         $this->expireTime = $expireTime;
 
