@@ -53,7 +53,7 @@ class PrepaidCardService
 
         if (!$this->hasEnoughBalance($user, $costValue)) {
             $this->logger->error('预付卡金额不足', [
-                'userId' => $user->getId(),
+                'userId' => $user->getUserIdentifier(),
                 'costValue' => $costValue,
                 'orderId' => $orderId,
             ]);
@@ -80,13 +80,13 @@ class PrepaidCardService
             }
 
             /** @var Card $card */
-            if ($costValue > $card->getBalance()) {
-                $v = $card->getBalance();
-                $card->setBalance(0);
+            if ($costValue > (float)$card->getBalance()) {
+                $v = (float)$card->getBalance();
+                $card->setBalance('0');
                 $card->setStatus(PrepaidCardStatus::EMPTY);
             } else {
                 $v = $costValue;
-                $card->setBalance($card->getBalance() - $costValue);
+                $card->setBalance((string)((float)$card->getBalance() - $costValue));
             }
             $card->checkStatus();
 
@@ -120,7 +120,7 @@ class PrepaidCardService
     public function returnBack(Contract $contract, ?float $refundAmount = null): float|int
     {
         // 默认退所有金额
-        if (!$refundAmount) {
+        if ($refundAmount === null) {
             $refundAmount = $contract->getCostAmount();
         }
 
@@ -152,15 +152,15 @@ class PrepaidCardService
         // 如果只有一个消费记录，直接退款
         if (count($consumptions) === 1) {
             $consumption = $consumptions[0];
-            $v = min($consumption->getRefundableAmount(), $actualRefundAmount);
+            $v = min((float)$consumption->getRefundableAmount(), $actualRefundAmount);
             $realBack += $v;
-            $consumption->setRefundableAmount($consumption->getRefundableAmount() - $v);
+            $consumption->setRefundableAmount((string)((float)$consumption->getRefundableAmount() - $v));
             $this->entityManager->persist($consumption);
             
             // 卡上的余额要变化
             $card = $consumption->getCard();
             // 确保余额保持两位小数格式
-            $card->setBalance(number_format($card->getBalance() + $v, 2, '.', ''));
+            $card->setBalance(number_format((float)$card->getBalance() + $v, 2, '.', ''));
             $card->checkStatus();
             $this->entityManager->persist($card);
             
@@ -177,17 +177,17 @@ class PrepaidCardService
             // 如果有多个消费记录，按比例退款
             foreach ($consumptions as $consumption) {
                 // 按比例计算每个消费记录应该退的金额
-                $ratio = $consumption->getRefundableAmount() / $totalRefundable;
-                $v = min($consumption->getRefundableAmount(), round($actualRefundAmount * $ratio, 2));
+                $ratio = (float)$consumption->getRefundableAmount() / $totalRefundable;
+                $v = min((float)$consumption->getRefundableAmount(), round($actualRefundAmount * $ratio, 2));
                 
                 $realBack += $v;
-                $consumption->setRefundableAmount($consumption->getRefundableAmount() - $v);
+                $consumption->setRefundableAmount((string)((float)$consumption->getRefundableAmount() - $v));
                 $this->entityManager->persist($consumption);
                 
                 // 卡上的余额要变化
                 $card = $consumption->getCard();
                 // 确保余额保持两位小数格式
-                $card->setBalance(number_format($card->getBalance() + $v, 2, '.', ''));
+                $card->setBalance(number_format((float)$card->getBalance() + $v, 2, '.', ''));
                 $card->checkStatus();
                 $this->entityManager->persist($card);
                 

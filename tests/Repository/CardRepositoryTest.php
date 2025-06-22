@@ -30,14 +30,10 @@ class CardRepositoryTest extends TestCase
         $this->assertInstanceOf(\Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository::class, $this->repository);
     }
 
-    public function testHasStandardRepositoryMethods(): void
+    public function testRepositoryIsServiceEntityRepository(): void
     {
-        // 验证Repository具有标准的Doctrine方法
-        $this->assertTrue(method_exists($this->repository, 'find'));
-        $this->assertTrue(method_exists($this->repository, 'findAll'));
-        $this->assertTrue(method_exists($this->repository, 'findBy'));
-        $this->assertTrue(method_exists($this->repository, 'findOneBy'));
-        $this->assertTrue(method_exists($this->repository, 'createQueryBuilder'));
+        // 验证Repository是ServiceEntityRepository的实例
+        $this->assertInstanceOf(\Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository::class, $this->repository);
     }
 
     public function testEntityClassName(): void

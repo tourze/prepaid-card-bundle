@@ -17,7 +17,7 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 
 /**
  * @see https://blog.csdn.net/zhichaosong/article/details/120316738
@@ -28,6 +28,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
 , \Stringable
 {
     use TimestampableAware;
+    use CreatedByAware;
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -88,9 +89,6 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
     private ?bool $valid = false;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
 
     public function __construct()
     {
@@ -242,12 +240,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
 
     public function removeConsumption(Consumption $consumption): static
     {
-        if ($this->consumptions->removeElement($consumption)) {
-            // set the owning side to null (unless already changed)
-            if ($consumption->getCard() === $this) {
-                $consumption->setCard(null);
-            }
-        }
+        $this->consumptions->removeElement($consumption);
 
         return $this;
     }
@@ -308,15 +301,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this;
     }
 
-    public function setCreatedBy(?string $createdBy): void
-    {
-        $this->createdBy = $createdBy;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }public function retrieveAdminArray(): array
+public function retrieveAdminArray(): array
     {
         return [
             'id' => $this->getId(),

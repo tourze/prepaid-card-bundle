@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Tourze\Symfony\CronJob\Attribute\AsCronTask;
 
 #[AsCronTask('* * * * *')]
-#[AsCommand(name: PrepaidCardExpireCheckCommand::NAME, description: '自动过期失效')]
+#[AsCommand(name: self::NAME, description: '自动过期失效')]
 class PrepaidCardExpireCheckCommand extends Command
 {
     public const NAME = 'prepaid-card:expire-check';

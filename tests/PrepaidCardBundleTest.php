@@ -37,7 +37,6 @@ class PrepaidCardBundleTest extends TestCase
     {
         $dependencies = PrepaidCardBundle::getBundleDependencies();
         
-        $this->assertIsArray($dependencies);
         $this->assertCount(2, $dependencies);
         
         // 验证依赖包

@@ -70,12 +70,12 @@ class ConsumptionTest extends TestCase
         $this->assertEquals('', (string) $consumption);
 
         // 设置标题和金额后
-        $this->consumption->setTitle('测试消费');
-        $this->consumption->setAmount('100.00');
+        $consumption2 = new Consumption();
+        $consumption2->setTitle('测试消费');
+        $consumption2->setAmount('100.00');
         
-        // 由于没有实际的ID，toString会返回空字符串
-        // 这里我们主要测试方法不会抛出异常
-        $result = (string) $this->consumption;
+        // 由于ID为0（默认值），toString应该返回空字符串
+        $this->assertEquals('', (string) $consumption2);
     }
 
     public function testRetrieveApiArray(): void

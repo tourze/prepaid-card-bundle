@@ -28,9 +28,7 @@ class PrepaidCardExtensionTest extends TestCase
 
     public function testHasLoadMethod(): void
     {
-        // 验证Extension具有必要的load方法
-        $this->assertTrue(method_exists($this->extension, 'load'));
-        
+        // 验证Extension的load方法是公开的
         $reflection = new \ReflectionMethod($this->extension, 'load');
         $this->assertTrue($reflection->isPublic());
         
@@ -67,11 +65,11 @@ class PrepaidCardExtensionTest extends TestCase
         
         // 验证第一个参数是数组类型
         $this->assertTrue($parameters[0]->hasType());
-        $this->assertEquals('array', $parameters[0]->getType()->getName());
+        $this->assertEquals('array', (string)$parameters[0]->getType());
         
         // 验证第二个参数是ContainerBuilder类型
         $this->assertTrue($parameters[1]->hasType());
-        $this->assertEquals(ContainerBuilder::class, $parameters[1]->getType()->getName());
+        $this->assertEquals(ContainerBuilder::class, (string)$parameters[1]->getType());
     }
 
     public function testLoadReturnType(): void
@@ -80,6 +78,6 @@ class PrepaidCardExtensionTest extends TestCase
         
         // 验证返回类型是void
         $this->assertTrue($reflection->hasReturnType());
-        $this->assertEquals('void', $reflection->getReturnType()->getName());
+        $this->assertEquals('void', (string)$reflection->getReturnType());
     }
 }

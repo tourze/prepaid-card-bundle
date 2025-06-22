@@ -42,12 +42,12 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(50);
+        $contract->setCostAmount('50');
 
         $consumption = new Consumption();
         $consumption->setCard($card);
-        $consumption->setAmount(-50);
-        $consumption->setRefundableAmount(50);
+        $consumption->setAmount('-50');
+        $consumption->setRefundableAmount('50');
         $consumption->setTitle('订单: ORDER123');
         $consumption->setOrderId('ORDER123');
 
@@ -95,12 +95,12 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(50);
+        $contract->setCostAmount('50');
 
         $consumption = new Consumption();
         $consumption->setCard($card);
-        $consumption->setAmount(-50);
-        $consumption->setRefundableAmount(50);
+        $consumption->setAmount('-50');
+        $consumption->setRefundableAmount('50');
         $consumption->setTitle('订单: ORDER123');
         $consumption->setOrderId('ORDER123');
 
@@ -148,12 +148,12 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(50);
+        $contract->setCostAmount('50');
 
         $consumption = new Consumption();
         $consumption->setCard($card);
-        $consumption->setAmount(-50);
-        $consumption->setRefundableAmount(0); // 已无可退金额
+        $consumption->setAmount('-50');
+        $consumption->setRefundableAmount('0'); // 已无可退金额
         $consumption->setTitle('订单: ORDER123');
         $consumption->setOrderId('ORDER123');
 
@@ -193,19 +193,19 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card2->setExpireTime(new \DateTimeImmutable('+2 years')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(60);
+        $contract->setCostAmount('60');
 
         $consumption1 = new Consumption();
         $consumption1->setCard($card1);
-        $consumption1->setAmount(-40);
-        $consumption1->setRefundableAmount(40);
+        $consumption1->setAmount('-40');
+        $consumption1->setRefundableAmount('40');
         $consumption1->setTitle('订单: ORDER123');
         $consumption1->setOrderId('ORDER123');
 
         $consumption2 = new Consumption();
         $consumption2->setCard($card2);
-        $consumption2->setAmount(-20);
-        $consumption2->setRefundableAmount(20);
+        $consumption2->setAmount('-20');
+        $consumption2->setRefundableAmount('20');
         $consumption2->setTitle('订单: ORDER123');
         $consumption2->setOrderId('ORDER123');
 
@@ -266,19 +266,19 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card2->setExpireTime(new \DateTimeImmutable('+2 years')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(60);
+        $contract->setCostAmount('60');
 
         $consumption1 = new Consumption();
         $consumption1->setCard($card1);
-        $consumption1->setAmount(-40);
-        $consumption1->setRefundableAmount(40);
+        $consumption1->setAmount('-40');
+        $consumption1->setRefundableAmount('40');
         $consumption1->setTitle('订单: ORDER123');
         $consumption1->setOrderId('ORDER123');
 
         $consumption2 = new Consumption();
         $consumption2->setCard($card2);
-        $consumption2->setAmount(-20);
-        $consumption2->setRefundableAmount(20);
+        $consumption2->setAmount('-20');
+        $consumption2->setRefundableAmount('20');
         $consumption2->setTitle('订单: ORDER123');
         $consumption2->setOrderId('ORDER123');
 
@@ -334,12 +334,12 @@ class PrepaidCardServiceReturnBackTest extends TestCase
         $card->setExpireTime(new \DateTimeImmutable('+1 year')); // 设置过期时间
 
         $contract = new Contract();
-        $contract->setCostAmount(50);
+        $contract->setCostAmount('50');
 
         $consumption = new Consumption();
         $consumption->setCard($card);
-        $consumption->setAmount(-50);
-        $consumption->setRefundableAmount(50);
+        $consumption->setAmount('-50');
+        $consumption->setRefundableAmount('50');
         $consumption->setTitle('订单: ORDER123');
         $consumption->setOrderId('ORDER123');
 

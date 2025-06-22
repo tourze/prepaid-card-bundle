@@ -128,20 +128,20 @@ class PrepaidCardTypeTest extends TestCase
         $oneTime = PrepaidCardType::ONE_TIME;
         $after = PrepaidCardType::AFTER;
 
-        // 验证枚举值适用于业务逻辑判断
-        $this->assertTrue($oneTime === PrepaidCardType::ONE_TIME);
-        $this->assertTrue($after === PrepaidCardType::AFTER);
-        $this->assertFalse($oneTime === $after);
+        // 验证枚举值的不同
+        $this->assertNotSame($oneTime, $after);
+        $this->assertNotEquals($oneTime->value, $after->value);
     }
 
     public function testStringComparison(): void
     {
         // 测试字符串比较
-        $this->assertTrue(PrepaidCardType::ONE_TIME->value === 'one-time');
-        $this->assertTrue(PrepaidCardType::AFTER->value === 'after');
+        $this->assertEquals('one-time', PrepaidCardType::ONE_TIME->value);
+        $this->assertEquals('after', PrepaidCardType::AFTER->value);
         
-        // 测试大小写敏感
-        $this->assertFalse(PrepaidCardType::ONE_TIME->value === 'ONE-TIME');
-        $this->assertFalse(PrepaidCardType::AFTER->value === 'AFTER');
+        // 测试枚举值是小写
+        $this->assertStringContainsString('-', PrepaidCardType::ONE_TIME->value);
+        $this->assertNotEquals('ONE-TIME', PrepaidCardType::ONE_TIME->value);
+        $this->assertNotEquals('AFTER', PrepaidCardType::AFTER->value);
     }
 } 

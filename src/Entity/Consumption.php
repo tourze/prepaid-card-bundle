@@ -8,15 +8,16 @@ use PrepaidCardBundle\Repository\ConsumptionRepository;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
-use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
+use Tourze\DoctrineTimestampBundle\Traits\CreateTimeAware;
+use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 
 #[ORM\Table(name: 'ims_prepaid_consumption', options: ['comment' => '消费记录'])]
 #[ORM\Entity(repositoryClass: ConsumptionRepository::class)]
 class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
+    use CreateTimeAware;
+    use CreatedByAware;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
@@ -47,18 +48,10 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeImmutable $createTime = null;
 
     public function __toString(): string
     {
-        if (!$this->getId()) {
+        if ($this->getId() === null || $this->getId() === 0) {
             return '';
         }
 
@@ -70,17 +63,6 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->id;
     }
 
-    public function setCreateTime(?\DateTimeImmutable $createdAt): self
-    {
-        $this->createTime = $createdAt;
-
-        return $this;
-    }
-
-    public function getCreateTime(): ?\DateTimeImmutable
-    {
-        return $this->createTime;
-    }
 
     public function getCard(): Card
     {
@@ -176,15 +158,6 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         $this->createdFromIp = $createdFromIp;
     }
 
-    public function setCreatedBy(?string $createdBy): void
-    {
-        $this->createdBy = $createdBy;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
 
     public function retrieveAdminArray(): array
     {
