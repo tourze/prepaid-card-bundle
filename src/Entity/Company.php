@@ -10,6 +10,7 @@ use PrepaidCardBundle\Repository\CompanyRepository;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
@@ -21,11 +22,7 @@ class Company implements AdminArrayInterface, \Stringable, Itemable
 {
     use TimestampableAware;
     use BlameableAware;
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[TrackColumn]
     #[ORM\Column(length: 255, unique: true, options: ['comment' => '公司名称'])]
@@ -59,11 +56,6 @@ class Company implements AdminArrayInterface, \Stringable, Itemable
         }
 
         return $this->getTitle();
-    }
-
-    public function getId(): ?string
-    {
-        return $this->id;
     }
 
 

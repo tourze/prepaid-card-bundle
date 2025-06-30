@@ -10,6 +10,7 @@ use PrepaidCardBundle\Entity\Card;
 use PrepaidCardBundle\Entity\Consumption;
 use PrepaidCardBundle\Entity\Contract;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
+use PrepaidCardBundle\Exception\InvalidCostValueException;
 use PrepaidCardBundle\Repository\CardRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -47,9 +48,6 @@ class PrepaidCardService
     public function costPay(UserInterface $user, float $costValue, string $orderId): ?Contract
     {
         $costValue = abs($costValue);
-        if (0 === $costValue) {
-            throw new \InvalidArgumentException('Cost cannot be zero.');
-        }
 
         if (!$this->hasEnoughBalance($user, $costValue)) {
             $this->logger->error('预付卡金额不足', [

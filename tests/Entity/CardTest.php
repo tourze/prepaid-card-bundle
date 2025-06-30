@@ -10,22 +10,7 @@ use PrepaidCardBundle\Entity\Company;
 use PrepaidCardBundle\Entity\Consumption;
 use PrepaidCardBundle\Entity\Package;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
-
-// 模拟BizUser类供测试使用
-class MockBizUser
-{
-    private string $id;
-
-    public function __construct(string $id = '1')
-    {
-        $this->id = $id;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-}
+use PrepaidCardBundle\Tests\Mock\MockBizUser;
 
 class CardTest extends TestCase
 {

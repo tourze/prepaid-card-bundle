@@ -29,7 +29,7 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
     private ?int $id = 0;
 
     #[RandomStringColumn(length: 10)]
-    #[Groups(['admin_curd'])]
+    #[Groups(groups: ['admin_curd'])]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, nullable: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
