@@ -3,159 +3,184 @@
 namespace PrepaidCardBundle\Tests\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\Entity\Campaign;
 use PrepaidCardBundle\Entity\Card;
 use PrepaidCardBundle\Entity\Company;
 use PrepaidCardBundle\Entity\Consumption;
 use PrepaidCardBundle\Entity\Package;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
-use PrepaidCardBundle\Tests\Mock\MockBizUser;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
-class CardTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Card::class)]
+final class CardTest extends AbstractEntityTestCase
 {
-    private Card $card;
-
-    protected function setUp(): void
+    protected function createEntity(): object
     {
-        $this->card = new Card();
+        return new Card();
     }
 
-    public function testGettersAndSetters(): void
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function propertiesProvider(): array
     {
-        // 测试基本属性
-        $this->card->setCardNumber('CARD123456');
-        $this->assertEquals('CARD123456', $this->card->getCardNumber());
-
-        $this->card->setCardPassword('password123');
-        $this->assertEquals('password123', $this->card->getCardPassword());
-
-        $this->card->setParValue('100.00');
-        $this->assertEquals('100.00', $this->card->getParValue());
-
-        $this->card->setBalance('100.00');
-        $this->assertEquals('100.00', $this->card->getBalance());
-
-        $now = new \DateTimeImmutable();
-        $this->card->setBindTime($now);
-        $this->assertEquals($now, $this->card->getBindTime());
-
-        $expireTime = new \DateTimeImmutable('+1 year');
-        $this->card->setExpireTime($expireTime);
-        $this->assertEquals($expireTime, $this->card->getExpireTime());
-
-        $this->card->setStatus(PrepaidCardStatus::VALID);
-        $this->assertEquals(PrepaidCardStatus::VALID, $this->card->getStatus());
-
-        $this->card->setValid(true);
-        $this->assertTrue($this->card->isValid());
-
-        $createTime = new \DateTimeImmutable();
-        $this->card->setCreateTime($createTime);
-        $this->assertEquals($createTime, $this->card->getCreateTime());
-
-        $updateTime = new \DateTimeImmutable();
-        $this->card->setUpdateTime($updateTime);
-        $this->assertEquals($updateTime, $this->card->getUpdateTime());
-
-        $this->card->setCreatedBy('admin');
-        $this->assertEquals('admin', $this->card->getCreatedBy());
+        return [
+            'cardNumber' => ['cardNumber', 'CARD123456'],
+            'cardPassword' => ['cardPassword', 'password123'],
+            'parValue' => ['parValue', '100.00'],
+            'balance' => ['balance', '100.00'],
+            'bindTime' => ['bindTime', new \DateTimeImmutable()],
+            'expireTime' => ['expireTime', new \DateTimeImmutable('+1 year')],
+            'status' => ['status', PrepaidCardStatus::VALID],
+            'valid' => ['valid', true],
+            'createTime' => ['createTime', new \DateTimeImmutable()],
+            'updateTime' => ['updateTime', new \DateTimeImmutable()],
+            'createdBy' => ['createdBy', 'admin'],
+        ];
     }
 
     public function testRelationships(): void
     {
-        // 测试关联关系
-        $company = $this->createMock(Company::class);
-        $this->card->setCompany($company);
-        $this->assertSame($company, $this->card->getCompany());
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
 
-        $campaign = $this->createMock(Campaign::class);
-        $this->card->setCampaign($campaign);
-        $this->assertSame($campaign, $this->card->getCampaign());
+        // 测试关联关系 - 使用真实的Entity实例
+        $company = new Company();
+        $company->setTitle('测试公司');
+        $card->setCompany($company);
+        $this->assertSame($company, $card->getCompany());
 
-        $package = $this->createMock(Package::class);
-        $this->card->setPackage($package);
-        $this->assertSame($package, $this->card->getPackage());
+        $campaign = new Campaign();
+        $campaign->setTitle('测试活动');
+        $card->setCampaign($campaign);
+        $this->assertSame($campaign, $card->getCampaign());
 
-        // 使用模拟BizUser
-        $owner = new MockBizUser();
-        // 跳过设置owner，因为它需要BizUser类型
-        // 此处我们只测试其他关系
+        $package = new Package();
+        $package->setPackageId('TEST_PACKAGE_001');
+        $package->setParValue('100.00');
+        $card->setPackage($package);
+        $this->assertSame($package, $card->getPackage());
+
+        // 使用匿名类UserInterface实现
+        $owner = new class implements UserInterface {
+            public function getUserIdentifier(): string
+            {
+                return 'test-user';
+            }
+
+            public function getRoles(): array
+            {
+                return ['ROLE_USER'];
+            }
+
+            public function eraseCredentials(): void
+            {
+                // 没有需要清除的凭据
+            }
+        };
+        $card->setOwner($owner);
+        $this->assertSame($owner, $card->getOwner());
     }
 
     public function testAddAndRemoveConsumption(): void
     {
-        $consumption = $this->createMock(Consumption::class);
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
+        // 使用真实的Consumption实例
+        $consumption = new Consumption();
+        $consumption->setTitle('测试消费');
+        $consumption->setOrderId('TXN_001');
+        $consumption->setAmount('50.00');
 
         // 初始应该是空集合
-        $this->assertInstanceOf(Collection::class, $this->card->getConsumptions());
-        $this->assertCount(0, $this->card->getConsumptions());
+        $this->assertInstanceOf(Collection::class, $card->getConsumptions());
+        $this->assertCount(0, $card->getConsumptions());
 
         // 添加消费记录
-        $this->card->addConsumption($consumption);
-        $this->assertCount(1, $this->card->getConsumptions());
-        $this->assertTrue($this->card->getConsumptions()->contains($consumption));
+        $card->addConsumption($consumption);
+        $this->assertCount(1, $card->getConsumptions());
+        $this->assertTrue($card->getConsumptions()->contains($consumption));
+        // 验证双向关联已正确设置
+        $this->assertSame($card, $consumption->getCard());
 
         // 移除消费记录
-        $this->card->removeConsumption($consumption);
-        $this->assertCount(0, $this->card->getConsumptions());
-        $this->assertFalse($this->card->getConsumptions()->contains($consumption));
+        $card->removeConsumption($consumption);
+        $this->assertCount(0, $card->getConsumptions());
+        $this->assertFalse($card->getConsumptions()->contains($consumption));
     }
 
-    public function testCheckStatus_whenExpired(): void
+    public function testCheckStatusWhenExpired(): void
     {
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
         // 设置过期时间为过去
         $pastDate = new \DateTimeImmutable('-1 day');
-        $this->card->setExpireTime($pastDate);
-        $this->card->setBalance('100.00');
-        $this->card->setStatus(PrepaidCardStatus::VALID);
+        $card->setExpireTime($pastDate);
+        $card->setBalance('100.00');
+        $card->setStatus(PrepaidCardStatus::VALID);
 
         // 检查状态
-        $this->card->checkStatus();
+        $card->checkStatus();
 
         // 应该变为过期状态
-        $this->assertEquals(PrepaidCardStatus::EXPIRED, $this->card->getStatus());
+        $this->assertEquals(PrepaidCardStatus::EXPIRED, $card->getStatus());
     }
 
-    public function testCheckStatus_whenEmpty(): void
+    public function testCheckStatusWhenEmpty(): void
     {
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
         // 设置余额为0
         $futureDate = new \DateTimeImmutable('+1 day');
-        $this->card->setExpireTime($futureDate);
-        $this->card->setBalance('0.00');
-        $this->card->setStatus(PrepaidCardStatus::VALID);
+        $card->setExpireTime($futureDate);
+        $card->setBalance('0.00');
+        $card->setStatus(PrepaidCardStatus::VALID);
 
         // 检查状态
-        $this->card->checkStatus();
+        $card->checkStatus();
 
         // 应该变为已用完状态
-        $this->assertEquals(PrepaidCardStatus::EMPTY, $this->card->getStatus());
+        $this->assertEquals(PrepaidCardStatus::EMPTY, $card->getStatus());
     }
 
-    public function testCheckStatus_whenValid(): void
+    public function testCheckStatusWhenValid(): void
     {
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
         // 设置有效卡片
         $futureDate = new \DateTimeImmutable('+1 day');
-        $this->card->setExpireTime($futureDate);
-        $this->card->setBalance('100.00');
-        $this->card->setStatus(PrepaidCardStatus::INIT);
+        $card->setExpireTime($futureDate);
+        $card->setBalance('100.00');
+        $card->setStatus(PrepaidCardStatus::INIT);
 
         // 检查状态
-        $this->card->checkStatus();
+        $card->checkStatus();
 
         // 应该变为有效状态
-        $this->assertEquals(PrepaidCardStatus::VALID, $this->card->getStatus());
+        $this->assertEquals(PrepaidCardStatus::VALID, $card->getStatus());
     }
 
     public function testRetrieveApiArray(): void
     {
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
         // 设置必要属性
-        $this->card->setCardNumber('CARD123456');
-        $this->card->setParValue('100.00');
-        $this->card->setBalance('100.00');
+        $card->setCardNumber('CARD123456');
+        $card->setParValue('100.00');
+        $card->setBalance('100.00');
 
         // 获取API数组
-        $array = $this->card->retrieveApiArray();
+        $array = $card->retrieveApiArray();
 
         // 检查关键字段是否存在
         $this->assertArrayHasKey('cardNumber', $array);
@@ -168,13 +193,16 @@ class CardTest extends TestCase
 
     public function testRetrieveAdminArray(): void
     {
+        $card = $this->createEntity();
+        self::assertInstanceOf(Card::class, $card);
+
         // 设置必要属性
-        $this->card->setCardNumber('CARD123456');
-        $this->card->setParValue('100.00');
-        $this->card->setBalance('100.00');
+        $card->setCardNumber('CARD123456');
+        $card->setParValue('100.00');
+        $card->setBalance('100.00');
 
         // 获取Admin数组
-        $array = $this->card->retrieveAdminArray();
+        $array = $card->retrieveAdminArray();
 
         // 检查是否为数组
         $this->assertArrayHasKey('cardNumber', $array);

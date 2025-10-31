@@ -1,83 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PrepaidCardBundle\Tests\DependencyInjection;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\DependencyInjection\PrepaidCardExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Tourze\PHPUnitSymfonyUnitTest\AbstractDependencyInjectionExtensionTestCase;
 
-class PrepaidCardExtensionTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(PrepaidCardExtension::class)]
+final class PrepaidCardExtensionTest extends AbstractDependencyInjectionExtensionTestCase
 {
     private PrepaidCardExtension $extension;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->extension = new PrepaidCardExtension();
     }
 
-    public function testExtensionInstantiation(): void
-    {
-        $this->assertInstanceOf(PrepaidCardExtension::class, $this->extension);
-    }
-
-    public function testExtendsExtension(): void
+    public function testExtensionExtendsSymfonyExtension(): void
     {
         $this->assertInstanceOf(Extension::class, $this->extension);
     }
 
-    public function testHasLoadMethod(): void
+    public function testExtensionIsInstantiable(): void
     {
-        // 验证Extension的load方法是公开的
-        $reflection = new \ReflectionMethod($this->extension, 'load');
-        $this->assertTrue($reflection->isPublic());
-        
-        // 验证方法参数
-        $parameters = $reflection->getParameters();
-        $this->assertCount(2, $parameters);
-        $this->assertEquals('configs', $parameters[0]->getName());
-        $this->assertEquals('container', $parameters[1]->getName());
+        $this->assertInstanceOf(PrepaidCardExtension::class, $this->extension);
     }
 
-    public function testServicesConfigPath(): void
+    public function testLoadDoesNotThrowException(): void
     {
-        // 验证services.yaml配置文件路径应该存在
-        $configPath = __DIR__ . '/../../src/Resources/config/services.yaml';
-        
-        // 由于这是单元测试，我们不检查文件是否真实存在，只验证路径格式正确
-        $this->assertStringEndsWith('services.yaml', $configPath);
-        $this->assertStringContainsString('Resources/config', $configPath);
+        $container = new ContainerBuilder();
+        $container->setParameter('kernel.environment', 'test');
+
+        $this->expectNotToPerformAssertions();
+        $this->extension->load([], $container);
     }
 
-    public function testExtensionAlias(): void
+    public function testGetAliasReturnsCorrectAlias(): void
     {
-        // Extension默认的alias应该是bundle名称的下划线版本
-        $alias = $this->extension->getAlias();
-        
-        // PrepaidCardExtension的默认alias应该是prepaid_card
-        $this->assertEquals('prepaid_card', $alias);
-    }
-
-    public function testLoadParameterTypes(): void
-    {
-        $reflection = new \ReflectionMethod($this->extension, 'load');
-        $parameters = $reflection->getParameters();
-        
-        // 验证第一个参数是数组类型
-        $this->assertTrue($parameters[0]->hasType());
-        $this->assertEquals('array', (string)$parameters[0]->getType());
-        
-        // 验证第二个参数是ContainerBuilder类型
-        $this->assertTrue($parameters[1]->hasType());
-        $this->assertEquals(ContainerBuilder::class, (string)$parameters[1]->getType());
-    }
-
-    public function testLoadReturnType(): void
-    {
-        $reflection = new \ReflectionMethod($this->extension, 'load');
-        
-        // 验证返回类型是void
-        $this->assertTrue($reflection->hasReturnType());
-        $this->assertEquals('void', (string)$reflection->getReturnType());
+        $this->assertSame('prepaid_card', $this->extension->getAlias());
     }
 }

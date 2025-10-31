@@ -7,6 +7,8 @@ services:
   # 如果确认要使用自动扫描、自动注册，建议尽可能将要扫描的目录路径收缩，不要设置那么大的范围
   PrepaidCardBundle\Command\:
     resource: '../../Command/'
+  PrepaidCardBundle\Controller\:
+    resource: '../../Controller/'
   PrepaidCardBundle\Repository\:
     resource: '../../Repository/'
   PrepaidCardBundle\Service\:

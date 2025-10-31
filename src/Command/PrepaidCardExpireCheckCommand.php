@@ -22,37 +22,47 @@ class PrepaidCardExpireCheckCommand extends Command
     public function __construct(
         private readonly CardRepository $cardRepository,
         private readonly EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $expiredCount = 0;
+        $emptyCount = 0;
+
         $qb = $this->cardRepository->createQueryBuilder('a')
             ->where('a.status=:status')
             ->andWhere('a.expireTime IS NOT NULL')
             ->andWhere('a.expireTime <= :now')
             ->setParameter('status', PrepaidCardStatus::VALID)
             ->setParameter('now', CarbonImmutable::now())
-            ->setMaxResults(500);
-        foreach ($qb->getQuery()->getResult() as $card) {
-            /* @var Card $card */
+            ->setMaxResults(500)
+        ;
+        /** @var Card[] $cards */
+        $cards = $qb->getQuery()->getResult();
+        foreach ($cards as $card) {
             $card->setStatus(PrepaidCardStatus::EXPIRED);
             $this->entityManager->persist($card);
+            ++$expiredCount;
         }
         $this->entityManager->flush();
 
         $qb = $this->cardRepository->createQueryBuilder('a')
             ->where('a.balance<=0 AND a.status=:status')
             ->setParameter('status', PrepaidCardStatus::VALID)
-            ->setMaxResults(500);
-        foreach ($qb->getQuery()->getResult() as $card) {
-            /* @var Card $card */
+            ->setMaxResults(500)
+        ;
+        /** @var Card[] $cards */
+        $cards = $qb->getQuery()->getResult();
+        foreach ($cards as $card) {
             $card->setStatus(PrepaidCardStatus::EMPTY);
             $this->entityManager->persist($card);
+            ++$emptyCount;
         }
         $this->entityManager->flush();
+
+        $output->writeln(sprintf('Prepaid card expire check completed. Expired: %d, Empty: %d', $expiredCount, $emptyCount));
 
         return Command::SUCCESS;
     }

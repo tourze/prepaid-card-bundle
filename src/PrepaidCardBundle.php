@@ -2,16 +2,20 @@
 
 namespace PrepaidCardBundle;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
+use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
+use Tourze\Symfony\CronJob\CronJobBundle;
 
 class PrepaidCardBundle extends Bundle implements BundleDependencyInterface
 {
     public static function getBundleDependencies(): array
     {
         return [
-            \Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class => ['all' => true],
-            \Tourze\Symfony\CronJob\CronJobBundle::class => ['all' => true],
+            DoctrineBundle::class => ['all' => true],
+            DoctrineIndexedBundle::class => ['all' => true],
+            CronJobBundle::class => ['all' => true],
         ];
     }
 }

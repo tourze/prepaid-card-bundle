@@ -2,13 +2,14 @@
 
 namespace PrepaidCardBundle\Enum;
 
+use Tourze\EnumExtra\BadgeInterface;
 use Tourze\EnumExtra\Itemable;
 use Tourze\EnumExtra\ItemTrait;
 use Tourze\EnumExtra\Labelable;
 use Tourze\EnumExtra\Selectable;
 use Tourze\EnumExtra\SelectTrait;
 
-enum PrepaidCardExpireType: int implements Labelable, Itemable, Selectable
+enum PrepaidCardExpireType: int implements Labelable, Itemable, Selectable, BadgeInterface
 {
     use ItemTrait;
     use SelectTrait;
@@ -21,6 +22,14 @@ enum PrepaidCardExpireType: int implements Labelable, Itemable, Selectable
         return match ($this) {
             self::SAME_WITH_CARD => '同卡有效期',
             self::AFTER_ACTIVATION => '激活后',
+        };
+    }
+
+    public function getBadge(): string
+    {
+        return match ($this) {
+            self::SAME_WITH_CARD => self::SUCCESS,
+            self::AFTER_ACTIVATION => self::WARNING,
         };
     }
 }

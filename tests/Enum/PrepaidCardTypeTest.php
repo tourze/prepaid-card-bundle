@@ -2,10 +2,19 @@
 
 namespace PrepaidCardBundle\Tests\Enum;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\Enum\PrepaidCardType;
+use Tourze\EnumExtra\BadgeInterface;
+use Tourze\EnumExtra\Itemable;
+use Tourze\EnumExtra\Labelable;
+use Tourze\EnumExtra\Selectable;
+use Tourze\PHPUnitEnum\AbstractEnumTestCase;
 
-class PrepaidCardTypeTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(PrepaidCardType::class)]
+final class PrepaidCardTypeTest extends AbstractEnumTestCase
 {
     public function testGetLabel(): void
     {
@@ -26,23 +35,6 @@ class PrepaidCardTypeTest extends TestCase
     {
         $this->assertEquals('one-time', PrepaidCardType::ONE_TIME->value);
         $this->assertEquals('after', PrepaidCardType::AFTER->value);
-    }
-
-    public function testToSelectItem(): void
-    {
-        // 测试ONE_TIME
-        $item = PrepaidCardType::ONE_TIME->toSelectItem();
-        $this->assertEquals('一次性全额付款', $item['label']);
-        $this->assertEquals('一次性全额付款', $item['text']);
-        $this->assertEquals('one-time', $item['value']);
-        $this->assertEquals('一次性全额付款', $item['name']);
-
-        // 测试AFTER
-        $item = PrepaidCardType::AFTER->toSelectItem();
-        $this->assertEquals('定金后期结算', $item['label']);
-        $this->assertEquals('定金后期结算', $item['text']);
-        $this->assertEquals('after', $item['value']);
-        $this->assertEquals('定金后期结算', $item['name']);
     }
 
     public function testAllCasesHaveLabels(): void
@@ -74,7 +66,7 @@ class PrepaidCardTypeTest extends TestCase
         }
 
         // 确保所有值都是唯一的
-        $this->assertEquals(count($values), count(array_unique($values)));
+        $this->assertCount(count(array_unique($values)), $values);
     }
 
     public function testSerializability(): void
@@ -83,8 +75,9 @@ class PrepaidCardTypeTest extends TestCase
         $original = PrepaidCardType::ONE_TIME;
         $serialized = serialize($original);
         $unserialized = unserialize($serialized);
-        
+
         $this->assertEquals($original, $unserialized);
+        self::assertInstanceOf(PrepaidCardType::class, $unserialized);
         $this->assertEquals($original->value, $unserialized->value);
         $this->assertEquals($original->getLabel(), $unserialized->getLabel());
     }
@@ -93,7 +86,7 @@ class PrepaidCardTypeTest extends TestCase
     {
         // 测试从值创建枚举实例
         $cases = PrepaidCardType::cases();
-        
+
         foreach ($cases as $case) {
             $fromValue = PrepaidCardType::from($case->value);
             $this->assertEquals($case, $fromValue);
@@ -106,20 +99,23 @@ class PrepaidCardTypeTest extends TestCase
         // 测试安全的从值创建枚举实例
         $this->assertEquals(PrepaidCardType::ONE_TIME, PrepaidCardType::tryFrom('one-time'));
         $this->assertEquals(PrepaidCardType::AFTER, PrepaidCardType::tryFrom('after'));
-        
+
         // 测试无效值
-        $this->assertNull(PrepaidCardType::tryFrom('invalid'));
-        $this->assertNull(PrepaidCardType::tryFrom(''));
+        $invalidResult1 = PrepaidCardType::tryFrom('invalid');
+        $invalidResult2 = PrepaidCardType::tryFrom('');
+        $this->assertNull($invalidResult1);
+        $this->assertNull($invalidResult2);
     }
 
     public function testInterfaceImplementation(): void
     {
         // 测试实现的接口
         $type = PrepaidCardType::ONE_TIME;
-        
-        $this->assertInstanceOf(\Tourze\EnumExtra\Labelable::class, $type);
-        $this->assertInstanceOf(\Tourze\EnumExtra\Itemable::class, $type);
-        $this->assertInstanceOf(\Tourze\EnumExtra\Selectable::class, $type);
+
+        $this->assertInstanceOf(Labelable::class, $type);
+        $this->assertInstanceOf(Itemable::class, $type);
+        $this->assertInstanceOf(Selectable::class, $type);
+        $this->assertInstanceOf(BadgeInterface::class, $type);
     }
 
     public function testBusinessLogic(): void
@@ -129,8 +125,11 @@ class PrepaidCardTypeTest extends TestCase
         $after = PrepaidCardType::AFTER;
 
         // 验证枚举值的不同
-        $this->assertNotSame($oneTime, $after);
         $this->assertNotEquals($oneTime->value, $after->value);
+
+        // 验证枚举值与字符串的对应关系
+        $this->assertEquals('one-time', $oneTime->value);
+        $this->assertEquals('after', $after->value);
     }
 
     public function testStringComparison(): void
@@ -138,10 +137,16 @@ class PrepaidCardTypeTest extends TestCase
         // 测试字符串比较
         $this->assertEquals('one-time', PrepaidCardType::ONE_TIME->value);
         $this->assertEquals('after', PrepaidCardType::AFTER->value);
-        
+
         // 测试枚举值是小写
         $this->assertStringContainsString('-', PrepaidCardType::ONE_TIME->value);
         $this->assertNotEquals('ONE-TIME', PrepaidCardType::ONE_TIME->value);
         $this->assertNotEquals('AFTER', PrepaidCardType::AFTER->value);
     }
-} 
+
+    public function testGetBadge(): void
+    {
+        $this->assertEquals('primary', PrepaidCardType::ONE_TIME->getBadge());
+        $this->assertEquals('info', PrepaidCardType::AFTER->getBadge());
+    }
+}

@@ -6,34 +6,47 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use PrepaidCardBundle\Repository\ConsumptionRepository;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\CreatedFromIpAware;
 use Tourze\DoctrineTimestampBundle\Traits\CreateTimeAware;
 use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 
+/**
+ * @implements AdminArrayInterface<string, mixed>
+ * @implements ApiArrayInterface<string, mixed>
+ */
 #[ORM\Table(name: 'ims_prepaid_consumption', options: ['comment' => '消费记录'])]
 #[ORM\Entity(repositoryClass: ConsumptionRepository::class)]
 class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
     use CreateTimeAware;
     use CreatedByAware;
+    use CreatedFromIpAware;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private int $id = 0;
 
     #[Ignore]
     #[ORM\ManyToOne(inversedBy: 'consumptions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Card $card;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     #[ORM\Column(length: 100, options: ['comment' => '标题'])]
     private string $title;
 
+    #[Assert\Length(max: 40)]
     #[ORM\Column(length: 40, nullable: true, options: ['comment' => '关联订单ID'])]
     private ?string $orderId = null;
 
+    #[Assert\NotBlank]
+    #[Assert\PositiveOrZero]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '费用'])]
     private string $amount;
 
@@ -41,17 +54,14 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
     #[ORM\JoinColumn(nullable: false)]
     private ?Contract $contract = null;
 
+    #[Assert\PositiveOrZero]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '可退款金额'])]
     private ?string $refundableAmount = null;
 
-    #[CreateIpColumn]
-    #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
-    private ?string $createdFromIp = null;
-
-
     public function __toString(): string
     {
-        if ($this->getId() === null || $this->getId() === 0) {
+        if (null === $this->getId() || 0 === $this->getId()) {
             return '';
         }
 
@@ -63,17 +73,14 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->id;
     }
 
-
     public function getCard(): Card
     {
         return $this->card;
     }
 
-    public function setCard(Card $card): static
+    public function setCard(Card $card): void
     {
         $this->card = $card;
-
-        return $this;
     }
 
     public function getTitle(): string
@@ -81,11 +88,9 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(string $title): void
     {
         $this->title = $title;
-
-        return $this;
     }
 
     public function getOrderId(): ?string
@@ -93,11 +98,9 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->orderId;
     }
 
-    public function setOrderId(?string $orderId): static
+    public function setOrderId(?string $orderId): void
     {
         $this->orderId = $orderId;
-
-        return $this;
     }
 
     public function getAmount(): string
@@ -105,13 +108,14 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->amount;
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(string $amount): void
     {
         $this->amount = $amount;
-
-        return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveApiArray(): array
     {
         return [
@@ -129,11 +133,9 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->contract;
     }
 
-    public function setContract(?Contract $contract): static
+    public function setContract(?Contract $contract): void
     {
         $this->contract = $contract;
-
-        return $this;
     }
 
     public function getRefundableAmount(): ?string
@@ -141,24 +143,14 @@ class Consumption implements ApiArrayInterface, AdminArrayInterface, \Stringable
         return $this->refundableAmount;
     }
 
-    public function setRefundableAmount(?string $refundableAmount): static
+    public function setRefundableAmount(?string $refundableAmount): void
     {
         $this->refundableAmount = $refundableAmount;
-
-        return $this;
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): void
-    {
-        $this->createdFromIp = $createdFromIp;
-    }
-
-
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveAdminArray(): array
     {
         return [

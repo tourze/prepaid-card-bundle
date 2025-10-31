@@ -6,20 +6,22 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * 实现UserInterface的测试用户类，用于测试预付卡服务
- * 
+ *
  * @internal
+ *
  * @codeCoverageIgnore
  */
 class TestUser implements UserInterface
 {
-    private string $id;
-    private string $username;
+    /**
+     * @var array<string>
+     */
     private array $roles = [];
 
-    public function __construct(string $id = '1', string $username = 'test_user')
-    {
-        $this->id = $id;
-        $this->username = $username;
+    public function __construct(
+        private readonly string $id = '1',
+        private readonly string $username = 'test_user',
+    ) {
     }
 
     /**
@@ -30,9 +32,6 @@ class TestUser implements UserInterface
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRoles(): array
     {
         return $this->roles;
@@ -46,19 +45,18 @@ class TestUser implements UserInterface
         return $this->username;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUserIdentifier(): string
     {
-        return $this->username;
+        return '' !== $this->username ? $this->username : 'default_user';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function eraseCredentials(): void
     {
         // 空实现，不需要擦除凭证
+    }
+
+    public function __toString(): string
+    {
+        return $this->getId();
     }
 }

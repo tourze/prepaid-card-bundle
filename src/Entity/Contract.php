@@ -9,33 +9,44 @@ use Doctrine\ORM\Mapping as ORM;
 use PrepaidCardBundle\Repository\ContractRepository;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\CreatedFromIpAware;
 use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
 use Tourze\DoctrineTimestampBundle\Traits\CreateTimeAware;
 use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 
+/**
+ * @implements AdminArrayInterface<string, mixed>
+ * @implements ApiArrayInterface<string, mixed>
+ */
 #[ORM\Table(name: 'ims_prepaid_contract', options: ['comment' => '预付订单'])]
 #[ORM\Entity(repositoryClass: ContractRepository::class)]
-class Contract implements ApiArrayInterface, AdminArrayInterface
-, \Stringable
+class Contract implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
     use CreateTimeAware;
     use CreatedByAware;
+    use CreatedFromIpAware;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private int $id = 0;
 
     #[RandomStringColumn(length: 10)]
     #[Groups(groups: ['admin_curd'])]
+    #[Assert\Length(max: 100)]
     #[ORM\Column(type: Types::STRING, length: 100, unique: true, nullable: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
+    #[Assert\DateTime]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '退款时间'])]
     private ?\DateTimeImmutable $refundTime = null;
 
+    #[Assert\NotBlank]
+    #[Assert\PositiveOrZero]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '总费用'])]
     private string $costAmount;
 
@@ -45,11 +56,6 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
     #[Ignore]
     #[ORM\OneToMany(mappedBy: 'contract', targetEntity: Consumption::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $consumptions;
-
-    #[CreateIpColumn]
-    #[ORM\Column(length: 45, nullable: true, options: ['comment' => '创建时IP'])]
-    private ?string $createdFromIp = null;
-
 
     public function __construct()
     {
@@ -66,11 +72,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this->code;
     }
 
-    public function setCode(string $code): self
+    public function setCode(string $code): void
     {
         $this->code = $code;
-
-        return $this;
     }
 
     /**
@@ -81,17 +85,15 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this->consumptions;
     }
 
-    public function addConsumption(Consumption $consumption): static
+    public function addConsumption(Consumption $consumption): void
     {
         if (!$this->consumptions->contains($consumption)) {
             $this->consumptions->add($consumption);
             $consumption->setContract($this);
         }
-
-        return $this;
     }
 
-    public function removeConsumption(Consumption $consumption): static
+    public function removeConsumption(Consumption $consumption): void
     {
         if ($this->consumptions->removeElement($consumption)) {
             // set the owning side to null (unless already changed)
@@ -99,8 +101,6 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
                 $consumption->setContract(null);
             }
         }
-
-        return $this;
     }
 
     public function getRefundTime(): ?\DateTimeImmutable
@@ -108,11 +108,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this->refundTime;
     }
 
-    public function setRefundTime(?\DateTimeImmutable $refundTime): static
+    public function setRefundTime(?\DateTimeImmutable $refundTime): void
     {
         $this->refundTime = $refundTime;
-
-        return $this;
     }
 
     public function getCostAmount(): string
@@ -120,11 +118,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return $this->costAmount;
     }
 
-    public function setCostAmount(string $costAmount): static
+    public function setCostAmount(string $costAmount): void
     {
         $this->costAmount = $costAmount;
-
-        return $this;
     }
 
     /**
@@ -132,6 +128,7 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
      */
     public function getRefundableAmount(): float
     {
+        /** @var array<float> $list */
         $list = [];
         foreach ($this->consumptions as $consumption) {
             $list[] = $consumption->getRefundableAmount();
@@ -140,17 +137,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         return array_sum($list);
     }
 
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): void
-    {
-        $this->createdFromIp = $createdFromIp;
-    }
-
-
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveApiArray(): array
     {
         return [
@@ -160,6 +149,9 @@ class Contract implements ApiArrayInterface, AdminArrayInterface
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveAdminArray(): array
     {
         return [

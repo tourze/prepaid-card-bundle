@@ -3,199 +3,312 @@
 namespace PrepaidCardBundle\Tests\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\Entity\Campaign;
 use PrepaidCardBundle\Entity\Card;
 use PrepaidCardBundle\Entity\Company;
 use PrepaidCardBundle\Entity\Package;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
-class CampaignTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Campaign::class)]
+final class CampaignTest extends AbstractEntityTestCase
 {
-    private Campaign $campaign;
-
-    protected function setUp(): void
+    protected function createEntity(): object
     {
-        $this->campaign = new Campaign();
+        return new Campaign();
     }
 
-    public function testGettersAndSetters(): void
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function propertiesProvider(): array
     {
-        // 测试基本属性
-        $this->campaign->setTitle('春节活动');
-        $this->assertEquals('春节活动', $this->campaign->getTitle());
-
-        $startTime = new \DateTimeImmutable('2024-01-01');
-        $this->campaign->setStartTime($startTime);
-        $this->assertEquals($startTime, $this->campaign->getStartTime());
-
-        $expireTime = new \DateTimeImmutable('2024-12-31');
-        $this->campaign->setExpireTime($expireTime);
-        $this->assertEquals($expireTime, $this->campaign->getExpireTime());
-
-        $giveCouponIds = ['COUPON001', 'COUPON002'];
-        $this->campaign->setGiveCouponIds($giveCouponIds);
-        $this->assertEquals($giveCouponIds, $this->campaign->getGiveCouponIds());
-
-        $this->campaign->setValid(true);
-        $this->assertTrue($this->campaign->isValid());
-
-        $createTime = new \DateTimeImmutable();
-        $this->campaign->setCreateTime($createTime);
-        $this->assertEquals($createTime, $this->campaign->getCreateTime());
-
-        $updateTime = new \DateTimeImmutable();
-        $this->campaign->setUpdateTime($updateTime);
-        $this->assertEquals($updateTime, $this->campaign->getUpdateTime());
-
-        $this->campaign->setCreatedBy('admin');
-        $this->assertEquals('admin', $this->campaign->getCreatedBy());
-
-        $this->campaign->setUpdatedBy('admin2');
-        $this->assertEquals('admin2', $this->campaign->getUpdatedBy());
+        return [
+            'title' => ['title', '春节活动'],
+            'startTime' => ['startTime', new \DateTimeImmutable('2024-01-01')],
+            'expireTime' => ['expireTime', new \DateTimeImmutable('2024-12-31')],
+            'giveCouponIds' => ['giveCouponIds', ['COUPON001', 'COUPON002']],
+            'valid' => ['valid', true],
+            'createTime' => ['createTime', new \DateTimeImmutable()],
+            'updateTime' => ['updateTime', new \DateTimeImmutable()],
+            'createdBy' => ['createdBy', 'admin'],
+            'updatedBy' => ['updatedBy', 'admin2'],
+        ];
     }
 
     public function testCompanyRelationship(): void
     {
-        /** @var Company&MockObject $company */
-        $company = $this->createMock(Company::class);
-        $this->campaign->setCompany($company);
-        $this->assertSame($company, $this->campaign->getCompany());
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+        /*
+         * 使用匿名类实现 Company 的原因：
+         * 1. 遵循 symplify.noTestMocks 规则，禁用 createMock()
+         * 2. Campaign 与 Company 的关系测试需要验证实际关联关系
+         * 3. 匿名类提供可控的测试数据且不依赖数据库
+         * 4. 简化关联关系测试的复杂性
+         */
+        $company = new class extends Company {
+            // 匿名Company类用于关联关系测试
+        };
+        $campaign->setCompany($company);
+        $this->assertSame($company, $campaign->getCompany());
 
         // 测试设置为null
-        $this->campaign->setCompany(null);
-        $this->assertNull($this->campaign->getCompany());
+        $campaign->setCompany(null);
+        $this->assertNull($campaign->getCompany());
     }
 
     public function testPackagesCollectionAdd(): void
     {
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
         // 初始应该是空集合
-        $this->assertInstanceOf(Collection::class, $this->campaign->getPackages());
-        $this->assertCount(0, $this->campaign->getPackages());
+        $this->assertInstanceOf(Collection::class, $campaign->getPackages());
+        $this->assertCount(0, $campaign->getPackages());
 
         // 添加码包
-        /** @var Package&MockObject $package1 */
-        $package1 = $this->createMock(Package::class);
-        $package1->expects($this->once())->method('setCampaign')->with($this->campaign);
-        
-        $this->campaign->addPackage($package1);
-        $this->assertCount(1, $this->campaign->getPackages());
-        $this->assertTrue($this->campaign->getPackages()->contains($package1));
+        /*
+         * 使用匿名类实现 Package 的原因：
+         * 1. 遵循 symplify.noTestMocks 规则，禁用 createMock()
+         * 2. Package 是业务实体类，包含与 Campaign 的双向关联关系
+         * 3. 需要测试 setCampaign() 等关联方法的调用
+         * 4. 匿名类可以跟踪方法调用次数
+         */
+        $setCampaignCallCount = 0;
+        $package1 = new class($setCampaignCallCount) extends Package {
+            public function __construct(private int &$callCountRef)
+            {
+                parent::__construct();
+            }
+
+            public function setCampaign(?Campaign $campaign): void
+            {
+                ++$this->callCountRef;
+                parent::setCampaign($campaign);
+            }
+        };
+
+        $campaign->addPackage($package1);
+        $this->assertCount(1, $campaign->getPackages());
+        $this->assertTrue($campaign->getPackages()->contains($package1));
+        $this->assertEquals(1, $setCampaignCallCount, 'setCampaign should be called once');
 
         // 重复添加同一个码包不应增加数量
-        $this->campaign->addPackage($package1);
-        $this->assertCount(1, $this->campaign->getPackages());
+        $campaign->addPackage($package1);
+        $this->assertCount(1, $campaign->getPackages());
     }
 
     public function testPackagesCollectionRemove(): void
     {
-        /** @var Package&MockObject $package1 */
-        $package1 = $this->createMock(Package::class);
-        $package1->expects($this->exactly(2))->method('setCampaign'); // 第一次设置为campaign，第二次设置为null
-        
-        $this->campaign->addPackage($package1);
-        
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+        /*
+         * 使用匿名类实现 Package 的原因：
+         * 1. 遵循 symplify.noTestMocks 规则，禁用 createMock()
+         * 2. Package 是业务实体类，包含与 Campaign 的双向关联关系
+         * 3. 需要测试 setCampaign() 和 getCampaign() 等关联方法的调用
+         * 4. 匿名类可以跟踪方法调用并返回预期值
+         */
+        $setCampaignCallCount = 0;
+        $getCampaignCallCount = 0;
+        $package1 = new class($setCampaignCallCount, $getCampaignCallCount) extends Package {
+            private ?Campaign $campaign = null;
+
+            public function __construct(
+                private int &$setCampaignCallCountRef,
+                private int &$getCampaignCallCountRef,
+            ) {
+                parent::__construct();
+            }
+
+            public function setCampaign(?Campaign $campaign): void
+            {
+                ++$this->setCampaignCallCountRef;
+                $this->campaign = $campaign;
+            }
+
+            public function getCampaign(): ?Campaign
+            {
+                ++$this->getCampaignCallCountRef;
+
+                return $this->campaign;
+            }
+        };
+
+        $campaign->addPackage($package1);
+
         // 移除码包
-        $package1->expects($this->once())->method('getCampaign')->willReturn($this->campaign);
-        
-        $this->campaign->removePackage($package1);
-        $this->assertCount(0, $this->campaign->getPackages());
-        $this->assertFalse($this->campaign->getPackages()->contains($package1));
+        $campaign->removePackage($package1);
+        $this->assertCount(0, $campaign->getPackages());
+        $this->assertFalse($campaign->getPackages()->contains($package1));
+        $this->assertEquals(2, $setCampaignCallCount, 'setCampaign should be called twice (add and remove)');
+        $this->assertEquals(1, $getCampaignCallCount, 'getCampaign should be called once during remove');
     }
 
     public function testCardsCollectionAdd(): void
     {
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
         // 初始应该是空集合
-        $this->assertInstanceOf(Collection::class, $this->campaign->getCards());
-        $this->assertCount(0, $this->campaign->getCards());
+        $this->assertInstanceOf(Collection::class, $campaign->getCards());
+        $this->assertCount(0, $campaign->getCards());
 
         // 添加卡片
-        /** @var Card&MockObject $card1 */
-        $card1 = $this->createMock(Card::class);
-        $card1->expects($this->once())->method('setCampaign')->with($this->campaign);
-        
-        $this->campaign->addCard($card1);
-        $this->assertCount(1, $this->campaign->getCards());
-        $this->assertTrue($this->campaign->getCards()->contains($card1));
+        /*
+         * 使用匿名类实现 Card 的原因：
+         * 1. 遵循 symplify.noTestMocks 规则，禁用 createMock()
+         * 2. Card 是业务实体类，包含与 Campaign 的双向关联关系
+         * 3. 需要测试 setCampaign() 等关联方法的调用
+         * 4. 匿名类可以跟踪方法调用次数
+         */
+        $setCampaignCallCount = 0;
+        $card1 = new class($setCampaignCallCount) extends Card {
+            public function __construct(private int &$callCountRef)
+            {
+                parent::__construct();
+            }
+
+            public function setCampaign(?Campaign $campaign): void
+            {
+                ++$this->callCountRef;
+                parent::setCampaign($campaign);
+            }
+        };
+
+        $campaign->addCard($card1);
+        $this->assertCount(1, $campaign->getCards());
+        $this->assertTrue($campaign->getCards()->contains($card1));
+        $this->assertEquals(1, $setCampaignCallCount, 'setCampaign should be called once');
 
         // 重复添加同一张卡片不应增加数量
-        $this->campaign->addCard($card1);
-        $this->assertCount(1, $this->campaign->getCards());
+        $campaign->addCard($card1);
+        $this->assertCount(1, $campaign->getCards());
     }
 
     public function testCardsCollectionRemove(): void
     {
-        /** @var Card&MockObject $card1 */
-        $card1 = $this->createMock(Card::class);
-        $card1->expects($this->exactly(2))->method('setCampaign'); // 第一次设置为campaign，第二次设置为null
-        
-        $this->campaign->addCard($card1);
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+        /*
+         * 使用匿名类实现 Card 的原因：
+         * 1. 遵循 symplify.noTestMocks 规则，禁用 createMock()
+         * 2. Card 是业务实体类，包含与 Campaign 的双向关联关系
+         * 3. 需要测试 setCampaign() 和 getCampaign() 等关联方法的调用
+         * 4. 匿名类可以跟踪方法调用并返回预期值
+         */
+        $setCampaignCallCount = 0;
+        $getCampaignCallCount = 0;
+        $card1 = new class($setCampaignCallCount, $getCampaignCallCount) extends Card {
+            private ?Campaign $campaign = null;
+
+            public function __construct(
+                private int &$setCampaignCallCountRef,
+                private int &$getCampaignCallCountRef,
+            ) {
+                parent::__construct();
+            }
+
+            public function setCampaign(?Campaign $campaign): void
+            {
+                ++$this->setCampaignCallCountRef;
+                $this->campaign = $campaign;
+                parent::setCampaign($campaign);
+            }
+
+            public function getCampaign(): ?Campaign
+            {
+                ++$this->getCampaignCallCountRef;
+
+                return $this->campaign;
+            }
+        };
+
+        $campaign->addCard($card1);
 
         // 移除卡片
-        $card1->expects($this->once())->method('getCampaign')->willReturn($this->campaign);
-        
-        $this->campaign->removeCard($card1);
-        $this->assertCount(0, $this->campaign->getCards());
-        $this->assertFalse($this->campaign->getCards()->contains($card1));
+        $campaign->removeCard($card1);
+        $this->assertCount(0, $campaign->getCards());
+        $this->assertFalse($campaign->getCards()->contains($card1));
+        $this->assertEquals(2, $setCampaignCallCount, 'setCampaign should be called twice (add and remove)');
+        $this->assertEquals(1, $getCampaignCallCount, 'getCampaign should be called once during remove');
     }
 
     public function testGiveCouponIdsWithNull(): void
     {
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
         // 设置为null时应返回空数组
-        $this->campaign->setGiveCouponIds(null);
-        $this->assertEquals([], $this->campaign->getGiveCouponIds());
+        $campaign->setGiveCouponIds(null);
+        $this->assertEquals([], $campaign->getGiveCouponIds());
 
         // 设置空数组
-        $this->campaign->setGiveCouponIds([]);
-        $this->assertEquals([], $this->campaign->getGiveCouponIds());
+        $campaign->setGiveCouponIds([]);
+        $this->assertEquals([], $campaign->getGiveCouponIds());
     }
 
     public function testGiveCouponIdsWithData(): void
     {
-        $couponIds = ['COUPON001', 'COUPON002', 'COUPON003'];
-        $this->campaign->setGiveCouponIds($couponIds);
-        $this->assertEquals($couponIds, $this->campaign->getGiveCouponIds());
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
+        $couponIds = [1001, 1002, 1003];
+        $campaign->setGiveCouponIds($couponIds);
+        $this->assertEquals($couponIds, $campaign->getGiveCouponIds());
     }
 
     public function testRetrieveAdminArray(): void
     {
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
         // 设置测试数据
-        $this->campaign->setTitle('测试活动');
+        $campaign->setTitle('测试活动');
         $startTime = new \DateTimeImmutable('2024-01-01 10:00:00');
-        $this->campaign->setStartTime($startTime);
+        $campaign->setStartTime($startTime);
         $expireTime = new \DateTimeImmutable('2024-12-31 23:59:59');
-        $this->campaign->setExpireTime($expireTime);
-        $this->campaign->setValid(true);
-        $this->campaign->setGiveCouponIds(['COUPON001']);
+        $campaign->setExpireTime($expireTime);
+        $campaign->setValid(true);
+        $campaign->setGiveCouponIds([1001]);
 
         $createTime = new \DateTimeImmutable('2024-01-01 08:00:00');
-        $this->campaign->setCreateTime($createTime);
+        $campaign->setCreateTime($createTime);
         $updateTime = new \DateTimeImmutable('2024-01-01 09:00:00');
-        $this->campaign->setUpdateTime($updateTime);
+        $campaign->setUpdateTime($updateTime);
 
-        // 模拟公司
-        /** @var Company&MockObject $company */
-        $company = $this->createMock(Company::class);
-        $company->expects($this->once())
-            ->method('retrieveAdminArray')
-            ->willReturn(['id' => '1', 'title' => '测试公司']);
-        $this->campaign->setCompany($company);
+        // 使用真实的Company实例
+        $company = new Company();
+        $company->setTitle('测试公司');
+        // 使用反射设置ID以便retrieveAdminArray能正常工作
+        $reflection = new \ReflectionClass($company);
+        $idProperty = $reflection->getProperty('id');
+        $idProperty->setAccessible(true);
+        $idProperty->setValue($company, '1');
+        $campaign->setCompany($company);
 
-        $array = $this->campaign->retrieveAdminArray();
+        $array = $campaign->retrieveAdminArray();
         $this->assertEquals('测试活动', $array['title']);
         $this->assertEquals('2024-01-01 10:00:00', $array['startTime']);
         $this->assertEquals('2024-12-31 23:59:59', $array['expireTime']);
         $this->assertTrue($array['valid']);
-        $this->assertEquals(['COUPON001'], $array['giveCouponIds']);
+        $this->assertEquals([1001], $array['giveCouponIds']);
         $this->assertEquals('2024-01-01 08:00:00', $array['createTime']);
         $this->assertEquals('2024-01-01 09:00:00', $array['updateTime']);
     }
 
     public function testRetrieveApiArray(): void
     {
-        $this->campaign->setTitle('测试活动');
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
 
-        $array = $this->campaign->retrieveApiArray();
+        $campaign->setTitle('测试活动');
+
+        $array = $campaign->retrieveApiArray();
         $this->assertEquals('测试活动', $array['title']);
         $this->assertArrayHasKey('id', $array);
     }
@@ -203,7 +316,7 @@ class CampaignTest extends TestCase
     public function testDefaultValues(): void
     {
         $campaign = new Campaign();
-        
+
         // 默认值测试
         $this->assertNull($campaign->getId());
         $this->assertFalse($campaign->isValid());
@@ -219,21 +332,24 @@ class CampaignTest extends TestCase
 
     public function testTimeHandling(): void
     {
+        $campaign = $this->createEntity();
+        self::assertInstanceOf(Campaign::class, $campaign);
+
         // 测试时间处理
         $startTime = new \DateTimeImmutable('2024-01-01 00:00:00');
         $expireTime = new \DateTimeImmutable('2024-12-31 23:59:59');
 
-        $this->campaign->setStartTime($startTime);
-        $this->campaign->setExpireTime($expireTime);
+        $campaign->setStartTime($startTime);
+        $campaign->setExpireTime($expireTime);
 
-        $this->assertEquals($startTime, $this->campaign->getStartTime());
-        $this->assertEquals($expireTime, $this->campaign->getExpireTime());
+        $this->assertEquals($startTime, $campaign->getStartTime());
+        $this->assertEquals($expireTime, $campaign->getExpireTime());
 
         // 测试null值
-        $this->campaign->setStartTime(null);
-        $this->campaign->setExpireTime(null);
-        
-        $this->assertNull($this->campaign->getStartTime());
-        $this->assertNull($this->campaign->getExpireTime());
+        $campaign->setStartTime(null);
+        $campaign->setExpireTime(null);
+
+        $this->assertNull($campaign->getStartTime());
+        $this->assertNull($campaign->getExpireTime());
     }
-} 
+}

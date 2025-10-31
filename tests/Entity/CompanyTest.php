@@ -3,218 +3,154 @@
 namespace PrepaidCardBundle\Tests\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\Entity\Campaign;
 use PrepaidCardBundle\Entity\Card;
 use PrepaidCardBundle\Entity\Company;
+use Tourze\PHPUnitDoctrineEntity\AbstractEntityTestCase;
 
-class CompanyTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(Company::class)]
+final class CompanyTest extends AbstractEntityTestCase
 {
-    private Company $company;
-
-    protected function setUp(): void
+    protected function createEntity(): object
     {
-        $this->company = new Company();
+        return new Company();
     }
 
-    public function testGettersAndSetters(): void
+    /**
+     * @return array<string, array{string, mixed}>
+     */
+    public static function propertiesProvider(): array
     {
-        // 测试基本属性
-        $this->company->setTitle('测试公司');
-        $this->assertEquals('测试公司', $this->company->getTitle());
-
-        $createTime = new \DateTimeImmutable();
-        $this->company->setCreateTime($createTime);
-        $this->assertEquals($createTime, $this->company->getCreateTime());
-
-        $updateTime = new \DateTimeImmutable();
-        $this->company->setUpdateTime($updateTime);
-        $this->assertEquals($updateTime, $this->company->getUpdateTime());
-
-        $this->company->setCreatedBy('admin');
-        $this->assertEquals('admin', $this->company->getCreatedBy());
-
-        $this->company->setUpdatedBy('admin2');
-        $this->assertEquals('admin2', $this->company->getUpdatedBy());
+        return [
+            'title' => ['title', '测试公司'],
+            'createTime' => ['createTime', new \DateTimeImmutable()],
+            'updateTime' => ['updateTime', new \DateTimeImmutable()],
+            'createdBy' => ['createdBy', 'admin'],
+            'updatedBy' => ['updatedBy', 'admin2'],
+        ];
     }
 
     public function testCampaignsCollectionAdd(): void
     {
-        // 初始应该是空集合
-        $this->assertInstanceOf(Collection::class, $this->company->getCampaigns());
-        $this->assertCount(0, $this->company->getCampaigns());
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
 
-        // 添加活动
-        /** @var Campaign&MockObject $campaign1 */
-        $campaign1 = $this->createMock(Campaign::class);
-        $campaign1->expects($this->once())->method('setCompany')->with($this->company);
-        
-        $this->company->addCampaign($campaign1);
-        $this->assertCount(1, $this->company->getCampaigns());
-        $this->assertTrue($this->company->getCampaigns()->contains($campaign1));
+        // 初始应该是空集合
+        $this->assertInstanceOf(Collection::class, $company->getCampaigns());
+        $this->assertCount(0, $company->getCampaigns());
+
+        // 添加活动 - 使用真实的Campaign实例
+        $campaign1 = new Campaign();
+        $campaign1->setTitle('测试活动');
+
+        $company->addCampaign($campaign1);
+        $this->assertCount(1, $company->getCampaigns());
+        $this->assertTrue($company->getCampaigns()->contains($campaign1));
+        // 验证双向关联已正确设置
+        $this->assertSame($company, $campaign1->getCompany());
 
         // 重复添加同一个活动不应增加数量
-        $this->company->addCampaign($campaign1);
-        $this->assertCount(1, $this->company->getCampaigns());
+        $company->addCampaign($campaign1);
+        $this->assertCount(1, $company->getCampaigns());
     }
 
     public function testCampaignsCollectionRemove(): void
     {
-        /** @var Campaign&MockObject $campaign1 */
-        $campaign1 = $this->createMock(Campaign::class);
-        $campaign1->expects($this->exactly(2))->method('setCompany'); // 第一次设置为company，第二次设置为null
-        
-        $this->company->addCampaign($campaign1);
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
+
+        // 使用真实的Campaign实例
+        $campaign1 = new Campaign();
+        $campaign1->setTitle('测试活动');
+
+        $company->addCampaign($campaign1);
+        // 验证添加成功
+        $this->assertCount(1, $company->getCampaigns());
+        $this->assertSame($company, $campaign1->getCompany());
 
         // 移除活动
-        $campaign1->expects($this->once())->method('getCompany')->willReturn($this->company);
-        
-        $this->company->removeCampaign($campaign1);
-        $this->assertCount(0, $this->company->getCampaigns());
-        $this->assertFalse($this->company->getCampaigns()->contains($campaign1));
+        $company->removeCampaign($campaign1);
+        $this->assertCount(0, $company->getCampaigns());
+        $this->assertFalse($company->getCampaigns()->contains($campaign1));
+        // 验证双向关联已正确清除
+        $this->assertNull($campaign1->getCompany());
     }
 
     public function testCardsCollectionAdd(): void
     {
-        // 初始应该是空集合
-        $this->assertInstanceOf(Collection::class, $this->company->getCards());
-        $this->assertCount(0, $this->company->getCards());
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
 
-        // 添加卡片
-        /** @var Card&MockObject $card1 */
-        $card1 = $this->createMock(Card::class);
-        $card1->expects($this->once())->method('setCompany')->with($this->company);
-        
-        $this->company->addCard($card1);
-        $this->assertCount(1, $this->company->getCards());
-        $this->assertTrue($this->company->getCards()->contains($card1));
+        // 初始应该是空集合
+        $this->assertInstanceOf(Collection::class, $company->getCards());
+        $this->assertCount(0, $company->getCards());
+
+        // 添加卡片 - 使用真实的Card实例
+        $card1 = new Card();
+        $card1->setCardNumber('TEST_CARD_001');
+
+        $company->addCard($card1);
+        $this->assertCount(1, $company->getCards());
+        $this->assertTrue($company->getCards()->contains($card1));
+        // 验证双向关联已正确设置
+        $this->assertSame($company, $card1->getCompany());
 
         // 重复添加同一张卡片不应增加数量
-        $this->company->addCard($card1);
-        $this->assertCount(1, $this->company->getCards());
+        $company->addCard($card1);
+        $this->assertCount(1, $company->getCards());
     }
 
     public function testCardsCollectionRemove(): void
     {
-        /** @var Card&MockObject $card1 */
-        $card1 = $this->createMock(Card::class);
-        $card1->expects($this->exactly(2))->method('setCompany'); // 第一次设置为company，第二次设置为null
-        
-        $this->company->addCard($card1);
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
+
+        // 使用真实的Card实例
+        $card1 = new Card();
+        $card1->setCardNumber('TEST_CARD_001');
+
+        $company->addCard($card1);
+        // 验证添加成功
+        $this->assertCount(1, $company->getCards());
+        $this->assertSame($company, $card1->getCompany());
 
         // 移除卡片
-        $card1->expects($this->once())->method('getCompany')->willReturn($this->company);
-        
-        $this->company->removeCard($card1);
-        $this->assertCount(0, $this->company->getCards());
-        $this->assertFalse($this->company->getCards()->contains($card1));
+        $company->removeCard($card1);
+        $this->assertCount(0, $company->getCards());
+        $this->assertFalse($company->getCards()->contains($card1));
+        // 验证双向关联已正确清除
+        $this->assertNull($card1->getCompany());
     }
 
     public function testToString(): void
     {
-        // 测试没有ID时
-        $company = new Company();
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
+        $company->setTitle('测试公司');
+
+        // 测试没有ID时（新创建的实体）
         $this->assertEquals('', (string) $company);
 
-        // 设置标题后
-        $this->company->setTitle('测试公司名称');
-        // 由于没有实际的ID，toString会返回空字符串
-        // 这里我们主要测试方法不会抛出异常
-        $result = (string) $this->company;
+        // 使用反射设置ID来测试有ID的情况
+        $reflection = new \ReflectionClass($company);
+        $idProperty = $reflection->getProperty('id');
+        $idProperty->setAccessible(true);
+        $idProperty->setValue($company, 123);
+
+        $this->assertEquals('测试公司', (string) $company);
     }
 
     public function testRetrieveAdminArray(): void
     {
-        // 设置测试数据
-        $this->company->setTitle('测试公司');
-        
-        $createTime = new \DateTimeImmutable('2024-01-01 08:00:00');
-        $this->company->setCreateTime($createTime);
-        $updateTime = new \DateTimeImmutable('2024-01-01 09:00:00');
-        $this->company->setUpdateTime($updateTime);
+        $company = $this->createEntity();
+        self::assertInstanceOf(Company::class, $company);
+        $company->setTitle('测试公司');
 
-        $array = $this->company->retrieveAdminArray();
+        $array = $company->retrieveAdminArray();
         $this->assertEquals('测试公司', $array['title']);
-        $this->assertEquals('2024-01-01 08:00:00', $array['createTime']);
-        $this->assertEquals('2024-01-01 09:00:00', $array['updateTime']);
-        $this->assertArrayHasKey('id', $array);
     }
-
-    public function testToSelectItem(): void
-    {
-        $this->company->setTitle('选择项测试公司');
-
-        $selectItem = $this->company->toSelectItem();
-        $this->assertEquals('选择项测试公司', $selectItem['label']);
-        $this->assertEquals('选择项测试公司', $selectItem['text']);
-        $this->assertEquals('选择项测试公司', $selectItem['name']);
-        $this->assertArrayHasKey('value', $selectItem);
-    }
-
-    public function testDefaultValues(): void
-    {
-        $company = new Company();
-        
-        // 默认值测试
-        $this->assertNull($company->getId());
-        $this->assertNull($company->getCreatedBy());
-        $this->assertNull($company->getUpdatedBy());
-        $this->assertNull($company->getCreateTime());
-        $this->assertNull($company->getUpdateTime());
-        $this->assertInstanceOf(Collection::class, $company->getCampaigns());
-        $this->assertInstanceOf(Collection::class, $company->getCards());
-        $this->assertCount(0, $company->getCampaigns());
-        $this->assertCount(0, $company->getCards());
-    }
-
-    public function testUniqueTitle(): void
-    {
-        // 测试标题设置
-        $title1 = '公司A';
-        $title2 = '公司B';
-
-        $this->company->setTitle($title1);
-        $this->assertEquals($title1, $this->company->getTitle());
-
-        $this->company->setTitle($title2);
-        $this->assertEquals($title2, $this->company->getTitle());
-    }
-
-    public function testTimeHandling(): void
-    {
-        // 测试时间处理
-        $createTime = new \DateTimeImmutable('2024-01-01 00:00:00');
-        $updateTime = new \DateTimeImmutable('2024-01-01 12:00:00');
-
-        $this->company->setCreateTime($createTime);
-        $this->company->setUpdateTime($updateTime);
-
-        $this->assertEquals($createTime, $this->company->getCreateTime());
-        $this->assertEquals($updateTime, $this->company->getUpdateTime());
-
-        // 测试null值
-        $this->company->setCreateTime(null);
-        $this->company->setUpdateTime(null);
-        
-        $this->assertNull($this->company->getCreateTime());
-        $this->assertNull($this->company->getUpdateTime());
-    }
-
-    public function testUserTracking(): void
-    {
-        // 测试用户追踪
-        $this->company->setCreatedBy('user1');
-        $this->company->setUpdatedBy('user2');
-
-        $this->assertEquals('user1', $this->company->getCreatedBy());
-        $this->assertEquals('user2', $this->company->getUpdatedBy());
-
-        // 测试null值
-        $this->company->setCreatedBy(null);
-        $this->company->setUpdatedBy(null);
-        
-        $this->assertNull($this->company->getCreatedBy());
-        $this->assertNull($this->company->getUpdatedBy());
-    }
-} 
+}

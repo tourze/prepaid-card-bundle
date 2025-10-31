@@ -11,10 +11,10 @@ use PrepaidCardBundle\Enum\PrepaidCardStatus;
 use PrepaidCardBundle\Repository\CardRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
 use Tourze\Arrayable\ApiArrayInterface;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
@@ -22,11 +22,12 @@ use Tourze\DoctrineUserBundle\Traits\CreatedByAware;
 
 /**
  * @see https://blog.csdn.net/zhichaosong/article/details/120316738
+ * @implements AdminArrayInterface<string, mixed>
+ * @implements ApiArrayInterface<string, mixed>
  */
 #[ORM\Table(name: 'ims_prepaid_card', options: ['comment' => '礼品卡'])]
 #[ORM\Entity(repositoryClass: CardRepository::class)]
-class Card implements ApiArrayInterface, AdminArrayInterface
-, \Stringable
+class Card implements ApiArrayInterface, AdminArrayInterface, \Stringable
 {
     use TimestampableAware;
     use CreatedByAware;
@@ -35,36 +36,47 @@ class Card implements ApiArrayInterface, AdminArrayInterface
     #[ORM\ManyToOne(inversedBy: 'cards')]
     private ?Company $company = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 40)]
     #[ORM\Column(length: 40, unique: true, options: ['comment' => '卡号'])]
     private string $cardNumber;
 
+    #[Assert\Length(max: 64)]
     #[ORM\Column(length: 64, nullable: true, options: ['comment' => '卡密'])]
     private ?string $cardPassword = null;
 
     #[TrackColumn]
+    #[Assert\NotBlank]
+    #[Assert\PositiveOrZero]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['comment' => '面值'])]
     private ?string $parValue = null;
 
     #[IndexColumn]
     #[TrackColumn]
+    #[Assert\PositiveOrZero]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '余额'])]
     private ?string $balance = null;
 
     #[IndexColumn]
     #[TrackColumn]
+    #[Assert\DateTime]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '绑定时间'])]
     private ?\DateTimeImmutable $bindTime = null;
 
     #[IndexColumn]
     #[TrackColumn]
+    #[Assert\DateTime]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '过期时间'])]
     private ?\DateTimeImmutable $expireTime = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: UserInterface::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?UserInterface $owner = null;
 
     #[TrackColumn]
+    #[Assert\Choice(callback: [PrepaidCardStatus::class, 'cases'])]
     #[ORM\Column(length: 30, nullable: true, enumType: PrepaidCardStatus::class, options: ['comment' => '状态'])]
     private ?PrepaidCardStatus $status = null;
 
@@ -83,26 +95,23 @@ class Card implements ApiArrayInterface, AdminArrayInterface
 
     #[IndexColumn]
     #[TrackColumn]
+    #[Assert\Type(type: 'bool')]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
     private ?bool $valid = false;
-
 
     public function __construct()
     {
         $this->consumptions = new ArrayCollection();
     }
 
-
     public function isValid(): ?bool
     {
         return $this->valid;
     }
 
-    public function setValid(?bool $valid): self
+    public function setValid(?bool $valid): void
     {
         $this->valid = $valid;
-
-        return $this;
     }
 
     public function getCompany(): ?Company
@@ -110,11 +119,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->company;
     }
 
-    public function setCompany(?Company $company): static
+    public function setCompany(?Company $company): void
     {
         $this->company = $company;
-
-        return $this;
     }
 
     public function getCardNumber(): string
@@ -122,11 +129,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->cardNumber;
     }
 
-    public function setCardNumber(string $cardNumber): static
+    public function setCardNumber(string $cardNumber): void
     {
         $this->cardNumber = $cardNumber;
-
-        return $this;
     }
 
     public function getCardPassword(): ?string
@@ -134,11 +139,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->cardPassword;
     }
 
-    public function setCardPassword(?string $cardPassword): static
+    public function setCardPassword(?string $cardPassword): void
     {
         $this->cardPassword = $cardPassword;
-
-        return $this;
     }
 
     public function getParValue(): ?string
@@ -146,11 +149,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->parValue;
     }
 
-    public function setParValue(string $parValue): static
+    public function setParValue(string $parValue): void
     {
         $this->parValue = $parValue;
-
-        return $this;
     }
 
     public function getBindTime(): ?\DateTimeImmutable
@@ -158,11 +159,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->bindTime;
     }
 
-    public function setBindTime(?\DateTimeImmutable $bindTime): static
+    public function setBindTime(?\DateTimeImmutable $bindTime): void
     {
         $this->bindTime = $bindTime;
-
-        return $this;
     }
 
     public function getExpireTime(): ?\DateTimeImmutable
@@ -170,11 +169,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->expireTime;
     }
 
-    public function setExpireTime(?\DateTimeImmutable $expireTime): static
+    public function setExpireTime(?\DateTimeImmutable $expireTime): void
     {
         $this->expireTime = $expireTime;
-
-        return $this;
     }
 
     public function getOwner(): ?UserInterface
@@ -182,11 +179,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->owner;
     }
 
-    public function setOwner(?UserInterface $owner): static
+    public function setOwner(?UserInterface $owner): void
     {
         $this->owner = $owner;
-
-        return $this;
     }
 
     public function getBalance(): ?string
@@ -194,11 +189,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->balance;
     }
 
-    public function setBalance(?string $balance): static
+    public function setBalance(?string $balance): void
     {
         $this->balance = $balance;
-
-        return $this;
     }
 
     public function getStatus(): ?PrepaidCardStatus
@@ -206,11 +199,9 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->status;
     }
 
-    public function setStatus(?PrepaidCardStatus $status): static
+    public function setStatus(?PrepaidCardStatus $status): void
     {
         $this->status = $status;
-
-        return $this;
     }
 
     /**
@@ -221,23 +212,22 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->consumptions;
     }
 
-    public function addConsumption(Consumption $consumption): static
+    public function addConsumption(Consumption $consumption): void
     {
         if (!$this->consumptions->contains($consumption)) {
             $this->consumptions->add($consumption);
             $consumption->setCard($this);
         }
-
-        return $this;
     }
 
-    public function removeConsumption(Consumption $consumption): static
+    public function removeConsumption(Consumption $consumption): void
     {
         $this->consumptions->removeElement($consumption);
-
-        return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function retrieveApiArray(): array
     {
         return [
@@ -250,7 +240,7 @@ class Card implements ApiArrayInterface, AdminArrayInterface
             'balance' => $this->getBalance(),
             'bindTime' => $this->getBindTime()?->format('Y-m-d H:i:s'),
             'expireTime' => $this->getExpireTime()?->format('Y-m-d H:i:s'),
-            'status' => $this->getStatus()?->toArray(),
+            'status' => $this->getStatus()?->toSelectItem(),
             'campaign' => $this->getCampaign()?->retrieveApiArray(),
             'package' => $this->getPackage()?->retrieveApiArray(),
         ];
@@ -261,17 +251,17 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->campaign;
     }
 
-    public function setCampaign(?Campaign $campaign): static
+    public function setCampaign(?Campaign $campaign): void
     {
         $this->campaign = $campaign;
-
-        return $this;
     }
 
     public function checkStatus(): void
     {
         $now = CarbonImmutable::now();
-        if ($now->greaterThan($this->getExpireTime())) {
+        $expireTime = $this->getExpireTime();
+
+        if (null !== $expireTime && $now->greaterThan($expireTime)) {
             $this->setStatus(PrepaidCardStatus::EXPIRED);
         } else {
             if ($this->getBalance() > 0) {
@@ -287,14 +277,15 @@ class Card implements ApiArrayInterface, AdminArrayInterface
         return $this->package;
     }
 
-    public function setPackage(?Package $package): static
+    public function setPackage(?Package $package): void
     {
         $this->package = $package;
-
-        return $this;
     }
 
-public function retrieveAdminArray(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function retrieveAdminArray(): array
     {
         return [
             'id' => $this->getId(),

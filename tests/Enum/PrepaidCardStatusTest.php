@@ -2,10 +2,16 @@
 
 namespace PrepaidCardBundle\Tests\Enum;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PrepaidCardBundle\Enum\PrepaidCardStatus;
+use Tourze\EnumExtra\BadgeInterface;
+use Tourze\PHPUnitEnum\AbstractEnumTestCase;
 
-class PrepaidCardStatusTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(PrepaidCardStatus::class)]
+final class PrepaidCardStatusTest extends AbstractEnumTestCase
 {
     public function testGetLabel(): void
     {
@@ -32,5 +38,42 @@ class PrepaidCardStatusTest extends TestCase
         $this->assertEquals('valid', PrepaidCardStatus::VALID->value);
         $this->assertEquals('expired', PrepaidCardStatus::EXPIRED->value);
         $this->assertEquals('empty', PrepaidCardStatus::EMPTY->value);
+    }
+
+    public function testToArray(): void
+    {
+        // 测试 INIT
+        $array = PrepaidCardStatus::INIT->toArray();
+        $this->assertEquals('init', $array['value']);
+        $this->assertEquals('初始化', $array['label']);
+
+        // 测试 VALID
+        $array = PrepaidCardStatus::VALID->toArray();
+        $this->assertEquals('valid', $array['value']);
+        $this->assertEquals('生效中', $array['label']);
+
+        // 测试 EXPIRED
+        $array = PrepaidCardStatus::EXPIRED->toArray();
+        $this->assertEquals('expired', $array['value']);
+        $this->assertEquals('已过期', $array['label']);
+
+        // 测试 EMPTY
+        $array = PrepaidCardStatus::EMPTY->toArray();
+        $this->assertEquals('empty', $array['value']);
+        $this->assertEquals('已使用', $array['label']);
+    }
+
+    public function testInterfaceImplementation(): void
+    {
+        $status = PrepaidCardStatus::INIT;
+        $this->assertInstanceOf(BadgeInterface::class, $status);
+    }
+
+    public function testGetBadge(): void
+    {
+        $this->assertEquals('warning', PrepaidCardStatus::INIT->getBadge());
+        $this->assertEquals('success', PrepaidCardStatus::VALID->getBadge());
+        $this->assertEquals('danger', PrepaidCardStatus::EXPIRED->getBadge());
+        $this->assertEquals('secondary', PrepaidCardStatus::EMPTY->getBadge());
     }
 }
