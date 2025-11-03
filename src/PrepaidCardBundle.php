@@ -6,6 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
 use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
+use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
 use Tourze\Symfony\CronJob\CronJobBundle;
 
 class PrepaidCardBundle extends Bundle implements BundleDependencyInterface
@@ -16,6 +17,7 @@ class PrepaidCardBundle extends Bundle implements BundleDependencyInterface
             DoctrineBundle::class => ['all' => true],
             DoctrineIndexedBundle::class => ['all' => true],
             CronJobBundle::class => ['all' => true],
+            EasyAdminMenuBundle::class => ['all' => true],
         ];
     }
 }
